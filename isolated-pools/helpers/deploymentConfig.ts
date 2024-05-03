@@ -5,6 +5,7 @@ import { contracts as governanceEthereum } from "@venusprotocol/governance-contr
 import { contracts as governanceOpbnbMainnet } from "@venusprotocol/governance-contracts/deployments/opbnbmainnet.json";
 import { contracts as governanceOpbnbTestnet } from "@venusprotocol/governance-contracts/deployments/opbnbtestnet.json";
 import { contracts as governanceSepolia } from "@venusprotocol/governance-contracts/deployments/sepolia.json";
+import { contracts as governanceNeonDevnet } from "./neondevnet/AccessControlManager.json";
 import { contracts as venusProtocolArbitrumSepolia } from "@venusprotocol/venus-protocol/deployments/arbitrumsepolia.json";
 import { contracts as venusProtocolBscMainnet } from "@venusprotocol/venus-protocol/deployments/bscmainnet.json";
 import { contracts as venusProtocolBscTestnet } from "@venusprotocol/venus-protocol/deployments/bsctestnet.json";
@@ -12,6 +13,7 @@ import { contracts as venusProtocolEthereum } from "@venusprotocol/venus-protoco
 import { contracts as venusProtocolOpbnbMainnet } from "@venusprotocol/venus-protocol/deployments/opbnbmainnet.json";
 import { contracts as venusProtocolOpbnbTestnet } from "@venusprotocol/venus-protocol/deployments/opbnbtestnet.json";
 import { contracts as venusProtocolSepolia } from "@venusprotocol/venus-protocol/deployments/sepolia.json";
+import { contracts as venusProtocolNeonDevnet } from "./neondevnet/VTreasuryV8.json";
 import { BigNumber } from "ethers";
 import { ethers } from "hardhat";
 import { DeploymentsExtension } from "hardhat-deploy/types";
@@ -23,6 +25,7 @@ export type NetworkConfig = {
   bsctestnet: DeploymentConfig;
   bscmainnet: DeploymentConfig;
   sepolia: DeploymentConfig;
+  neondevnet: DeploymentConfig;
   ethereum: DeploymentConfig;
   opbnbtestnet: DeploymentConfig;
   opbnbmainnet: DeploymentConfig;
@@ -126,6 +129,7 @@ export const blocksPerYear: BlocksPerYear = {
   bsctestnet: BSC_BLOCKS_PER_YEAR,
   bscmainnet: BSC_BLOCKS_PER_YEAR,
   sepolia: ETH_BLOCKS_PER_YEAR,
+  neondevnet: 24 * ETH_BLOCKS_PER_YEAR, // 24 * 12 seconds ( every 500ms solana confirms a new block )
   ethereum: ETH_BLOCKS_PER_YEAR,
   opbnbtestnet: OPBNB_BLOCKS_PER_YEAR,
   opbnbmainnet: OPBNB_BLOCKS_PER_YEAR,
@@ -134,6 +138,7 @@ export const blocksPerYear: BlocksPerYear = {
 };
 
 export const SEPOLIA_MULTISIG = "0x94fa6078b6b8a26f0b6edffbe6501b22a10470fb";
+export const NEON_DEVNET_MULTISIG = "0xb8f913C9AB9944891993F6c6fDAc421D98461294";
 export const ETHEREUM_MULTISIG = "0x285960C5B22fD66A736C7136967A3eB15e93CC67";
 export const OPBNBTESTNET_MULTISIG = "0xb15f6EfEbC276A3b9805df81b5FB3D50C2A62BDf";
 export const OPBNBMAINNET_MULTISIG = "0xC46796a21a3A9FAB6546aF3434F2eBfFd0604207";
@@ -184,6 +189,14 @@ export const preconfiguredAddresses = {
     CriticalTimelock: SEPOLIA_MULTISIG,
     GovernorBravo: SEPOLIA_MULTISIG,
     AccessControlManager: governanceSepolia.AccessControlManager.address,
+  },
+  neondevnet: {
+    VTreasury: venusProtocolNeonDevnet.VTreasuryV8.address,
+    NormalTimelock: NEON_DEVNET_MULTISIG,
+    FastTrackTimelock: NEON_DEVNET_MULTISIG,
+    CriticalTimelock: NEON_DEVNET_MULTISIG,
+    GovernorBravo: NEON_DEVNET_MULTISIG,
+    AccessControlManager: governanceNeonDevnet.AccessControlManager.address,
   },
   ethereum: {
     VTreasury: venusProtocolEthereum.VTreasuryV8.address,
@@ -2871,6 +2884,130 @@ export const globalConfig: NetworkConfig = {
     ],
     preconfiguredAddresses: preconfiguredAddresses.sepolia,
   },
+  neondevnet: {
+    tokensConfig: [
+      {
+        isMock: true,
+        name: "Wrapped BTC",
+        symbol: "WBTC",
+        decimals: 8,
+        tokenAddress: ethers.constants.AddressZero,
+      },
+      {
+        isMock: true,
+        name: "Wrapped Ether",
+        symbol: "WETH",
+        decimals: 18,
+        tokenAddress: ethers.constants.AddressZero,
+      },
+      {
+        isMock: true,
+        name: "Tether USD",
+        symbol: "USDT",
+        decimals: 6,
+        tokenAddress: ethers.constants.AddressZero,
+      }
+    ],
+    poolConfig: [
+      {
+        id: "Core",
+        name: "Core",
+        closeFactor: convertToUnit("0.5", 18),
+        liquidationIncentive: convertToUnit("1.1", 18),
+        minLiquidatableCollateral: convertToUnit("100", 18),
+        vtokens: [
+          {
+            name: "Venus WBTC (Core)",
+            asset: "WBTC",
+            symbol: "vWBTC_Core",
+            rateModel: InterestRateModels.JumpRate.toString(),
+            baseRatePerYear: "0",
+            multiplierPerYear: convertToUnit("0.05", 18),
+            jumpMultiplierPerYear: convertToUnit("0.8", 18),
+            kink_: convertToUnit("0.75", 18),
+            collateralFactor: convertToUnit("0.75", 18),
+            liquidationThreshold: convertToUnit("0.8", 18),
+            reserveFactor: convertToUnit("0.2", 18),
+            initialSupply: convertToUnit("0.3", 8), // 0.3 WBTC
+            supplyCap: convertToUnit(300, 8),
+            borrowCap: convertToUnit(250, 8),
+            reduceReservesBlockDelta: DEFAULT_REDUCE_RESERVES_BLOCK_DELTA,
+            vTokenReceiver: preconfiguredAddresses.neondevnet.VTreasury,
+          },
+          {
+            name: "Venus WETH (Core)",
+            asset: "WETH",
+            symbol: "vWETH_Core",
+            rateModel: InterestRateModels.JumpRate.toString(),
+            baseRatePerYear: "0",
+            multiplierPerYear: convertToUnit("0.045", 18),
+            jumpMultiplierPerYear: convertToUnit("0.8", 18),
+            kink_: convertToUnit("0.8", 18),
+            collateralFactor: convertToUnit("0.75", 18),
+            liquidationThreshold: convertToUnit("0.8", 18),
+            reserveFactor: convertToUnit("0.2", 18),
+            initialSupply: convertToUnit(5, 18), // 5 WETH
+            supplyCap: convertToUnit(5500, 18),
+            borrowCap: convertToUnit(4600, 18),
+            reduceReservesBlockDelta: DEFAULT_REDUCE_RESERVES_BLOCK_DELTA,
+            vTokenReceiver: preconfiguredAddresses.neondevnet.VTreasury,
+          },
+          {
+            name: "Venus USDT (Core)",
+            asset: "USDT",
+            symbol: "vUSDT_Core",
+            rateModel: InterestRateModels.JumpRate.toString(),
+            baseRatePerYear: "0",
+            multiplierPerYear: convertToUnit("0.07", 18),
+            jumpMultiplierPerYear: convertToUnit("0.8", 18),
+            kink_: convertToUnit("0.8", 18),
+            collateralFactor: convertToUnit("0.8", 18),
+            liquidationThreshold: convertToUnit("0.82", 18),
+            reserveFactor: convertToUnit("0.1", 18),
+            initialSupply: convertToUnit(10_000, 6), // 10,000 USDT
+            supplyCap: convertToUnit(10_000_000, 6),
+            borrowCap: convertToUnit(9_000_000, 6),
+            reduceReservesBlockDelta: DEFAULT_REDUCE_RESERVES_BLOCK_DELTA,
+            vTokenReceiver: preconfiguredAddresses.neondevnet.VTreasury,
+          }
+        ],
+        rewards: [],
+      },
+      {
+        id: "Stablecoins",
+        name: "Stablecoins",
+        closeFactor: convertToUnit("0.5", 18),
+        liquidationIncentive: convertToUnit("1.1", 18),
+        minLiquidatableCollateral: convertToUnit("100", 18),
+        vtokens: [
+          {
+            name: "Venus USDT (Stablecoins)",
+            asset: "USDT",
+            symbol: "vUSDT_Stablecoins",
+            rateModel: InterestRateModels.JumpRate.toString(),
+            baseRatePerYear: "0",
+            multiplierPerYear: convertToUnit("0.07", 18),
+            jumpMultiplierPerYear: convertToUnit("0.8", 18),
+            kink_: convertToUnit("0.8", 18),
+            collateralFactor: convertToUnit("0.85", 18),
+            liquidationThreshold: convertToUnit("0.9", 18),
+            reserveFactor: convertToUnit("0.1", 18),
+            initialSupply: convertToUnit(10_000, 6), // 10,000 USDT
+            supplyCap: convertToUnit(5_000_000, 6),
+            borrowCap: convertToUnit(4_500_000, 6),
+            reduceReservesBlockDelta: DEFAULT_REDUCE_RESERVES_BLOCK_DELTA,
+            vTokenReceiver: preconfiguredAddresses.neondevnet.VTreasury,
+          },
+        ],
+        rewards: [],
+      },
+    ],
+    accessControlConfig: [
+      ...poolRegistryPermissions(),
+      ...normalTimelockPermissions(preconfiguredAddresses.neondevnet.NormalTimelock),
+    ],
+    preconfiguredAddresses: preconfiguredAddresses.neondevnet,
+  },
   ethereum: {
     tokensConfig: [
       {
@@ -3722,6 +3859,8 @@ export async function getConfig(networkName: string): Promise<DeploymentConfig> 
       return globalConfig.bscmainnet;
     case "sepolia":
       return globalConfig.sepolia;
+    case "neondevnet":
+        return globalConfig.neondevnet;
     case "ethereum":
       return globalConfig.ethereum;
     case "opbnbtestnet":
@@ -3828,8 +3967,10 @@ export function getMaxBorrowRateMantissa(networkName: string): BigNumber {
       return BigNumber.from(0.0005e16);
     case "bscmainnet":
       return BigNumber.from(0.0005e16);
-    case "sepolia":
-      return BigNumber.from(0.0005e16);
+      case "sepolia":
+        return BigNumber.from(0.0005e16);
+        case "neondevnet":
+          return BigNumber.from(0.0005e16);
     case "ethereum":
       return BigNumber.from(0.0005e16);
     case "opbnbtestnet":

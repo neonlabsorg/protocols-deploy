@@ -70,6 +70,7 @@ func.tags = ["SwapRouter", "il"];
 // Pancake Factory is not deployed on the local network
 func.skip = async hre =>
   hre.network.name === "sepolia" ||
+  hre.network.name === "neondevnet" ||
   hre.network.name === "hardhat" ||
   hre.network.name === "opbnbtestnet" ||
   hre.network.name === "opbnbmainnet" ||

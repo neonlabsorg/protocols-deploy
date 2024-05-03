@@ -120,7 +120,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       const vTokenDecimals = 8;
       let protocolShareReserveAddress;
       try {
-        protocolShareReserveAddress = (await ethers.getContract("ProtocolShareReserve")).address;
+        //protocolShareReserveAddress = (await ethers.getContract("ProtocolShareReserve")).address;
+        protocolShareReserveAddress = '0x24c723f2c492690Ed2AaF9b5e2762799998D0b1E';
       } catch (e) {
         if (!hre.network.live) {
           console.warn("ProtocolShareReserve contract not found. Deploying address");
