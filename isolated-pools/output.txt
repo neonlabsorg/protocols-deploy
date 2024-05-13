@@ -1,0 +1,265 @@
+npx hardhat deploy --network neondevnet --tags MockTokens
+deploying "MockWBTC" (tx: 0x44eaea18c4b66083c73c672145f5df86709f3cf6c0cb3fefda92dfb330daf7bf)...: deployed at 0xa7c34430F201FCec57047E50426454aEFb9Ddf15 with 33702480 gas
+deploying "MockWETH" (tx: 0x5934d900c15233cf1b8ddfe2ad6929f25e11d0f49b29faba1183e71860a76141)...: deployed at 0xB292afD1547EF1C65F4E9b79005481628FB42f6A with 33702480 gas
+deploying "MockUSDT" (tx: 0x56f90025336ea979e16e579c06379b283063826fe04159b770da6bdfebe4ed41)...: deployed at 0xBAc77FCc59C1897e11c0FAc6464D840fdb923A15 with 33702480 gas
+
+npx hardhat deploy --network neondevnet --tags il
+deploying "DefaultProxyAdmin" (tx: 0x9f22a0514f8169d328b72ee54f2322fc7687d09d5ad6755dcd4fc9a6489ce166)...: deployed at 0x04d379b0fEbcC858F7f7C9f701cE0FBaC895Fee5 with 35136240 gas
+deploying "PoolRegistry_Implementation" (tx: 0x705e7c0ceae317574cdd230a4c56b644ad26cf0166e2f3dd9bacb945533ac092)...: deployed at 0x038600e53B5750Db48fb6aF0eeAF90e61c554bCF with 98483520 gas
+deploying "PoolRegistry_Proxy" (tx: 0xc7971c5d8fa3ea2dd5be35055f1135f1ae54953da96aee5bea92d6b8829857b4)...: deployed at 0xb0519C356238B6052A5c77eaD613d9721e70975f with 39607600 gas
+deploying "PoolLens" (tx: 0xef60dbac54eb32473f7490544c3bbf9e1f505bb373c124be24e6b23abd9dac2d)...: deployed at 0xb2AD152d7F6a5fD9c25C4dA1dAAF51f8E721c946 with 130865560 gas
+deploying "ComptrollerImpl" (tx: 0xa73af678b149847c72efb087cc366b5091dadb71a594f3a88590b7d7fb87255f)...: deployed at 0x9c9Fd15eaC5B97E43a64018e5b7Df46684c5F594 with 178101320 gas
+deploying "ComptrollerBeacon" (tx: 0x2431ab6b29b6a83bf6a69ab08439bbc17fcc0ffc3765ca4e41a76f7d6448e938)...: deployed at 0x995Aae38c96542e283166B4D0C3eD51B553dBC9E with 22633040 gas
+Deploying a proxy for Comptroller of the pool Core
+deploying "Comptroller_Core" (tx: 0xdb6e38975002a170d7545f4506cd8307413c1a4c1c6a8b9e1dfd414b79ccf51b)...: deployed at 0xaFc186B4eF1efBa996419A976e6Bc4C5D4574476 with 22839880 gas
+deploying "VTokenImpl" (tx: 0x4ff280d2db103929c131b460432e0a06f27fa0b5964f5cad2f436ad701c16555)...: deployed at 0x7e8522047fBb2528152CC5F25B14A59079f00F2C with 156489440 gas
+deploying "VTokenBeacon" (tx: 0x5bd1a86c09497c4754bfe856735149184f33810e16c5436c97c3393cd6728891)...: deployed at 0x18902105EF8D1e58244b4346BC6B96B46E55bc4A with 22633040 gas
+Deploying interest rate model JumpRateModelV2_base0bps_slope500bps_jump8000bps_kink7500bps
+deploying "JumpRateModelV2_base0bps_slope500bps_jump8000bps_kink7500bps" (tx: 0x98de0f20ea9bc1a694249ce8d5d1d02a6fb23ad76fe9c4e38cf8230bfe1ca0b0)...: deployed at 0x713272524D4773cEAa254874742266b18159b90D with 30939360 gas
+Deploying VToken proxy for vWBTC_Core
+deploying "VToken_vWBTC_Core" (tx: 0xe0ee4887a41a9cd32f0c799ce01e6114acd715f2b37902de8fa9119663d75b36)...: deployed at 0x4e4Cbd2075c187052cbF62e17eeb97e0aA44aD62 with 24433720 gas
+-----------------------------------------
+Deploying interest rate model JumpRateModelV2_base0bps_slope450bps_jump8000bps_kink8000bps
+deploying "JumpRateModelV2_base0bps_slope450bps_jump8000bps_kink8000bps" (tx: 0x236489d5dccf538964e5f09c969db5da5d9f1be7972ba15cabd770ef67d23d41)...: deployed at 0xd2dA3B565F2EbC1a3F93e6E3250Ccb1Ba924c157 with 30939360 gas
+Deploying VToken proxy for vWETH_Core
+deploying "VToken_vWETH_Core" (tx: 0xff32b2eef9bb63c40895c25cd31ccca398432799e69be94db00ce9985fadb699)...: deployed at 0x6Ea7040354e93020F534C4D345f606D974cb51c4 with 24433720 gas
+-----------------------------------------
+Deploying interest rate model JumpRateModelV2_base0bps_slope700bps_jump8000bps_kink8000bps
+deploying "JumpRateModelV2_base0bps_slope700bps_jump8000bps_kink8000bps" (tx: 0x90f0bbdd18bc7d08c4a4a0c83cbd568f27e36e5d15382260660dd36c5fd138f8)...: deployed at 0x871eae3D21197F8388f0D72597950664B8361EE2 with 30939360 gas
+Deploying VToken proxy for vUSDT_Core
+deploying "VToken_vUSDT_Core" (tx: 0x06b5329243ac7638ef68d785d34fa17e6c341dfb7aa3cf655aa64c7aba801c79)...: deployed at 0xb1DD1BbC691aBE79093f6025755bd7916D8353bA with 24433720 gas
+-----------------------------------------
+deploying "RewardsDistributorImpl" (tx: 0x4694927936880421add1290a9fe297e4ef838cc21d60294407befec5913adf5f)...: deployed at 0x49E7715aE086981861d4f47F5FB02D60b8D072EC with 118757120 gas
+Minting 30000000 mock WBTC to owner
+Minting 5000000000000000000 mock WETH to owner
+Minting 10000000000 mock USDT to owner
+Sending 30000000 WBTC to VTreasury
+Token Contract: 0xa7c34430F201FCec57047E50426454aEFb9Ddf15
+Token Contract: 30000000
+Token Contract: 0x83216e4F2ef132Ff4a1c6e0644C61d7Ac00D0fF5
+Sending 5000000000000000000 WETH to VTreasury
+Token Contract: 0xB292afD1547EF1C65F4E9b79005481628FB42f6A
+Token Contract: 5000000000000000000
+Token Contract: 0x83216e4F2ef132Ff4a1c6e0644C61d7Ac00D0fF5
+Sending 10000000000 USDT to VTreasury
+Token Contract: 0xBAc77FCc59C1897e11c0FAc6464D840fdb923A15
+Token Contract: 10000000000
+Token Contract: 0x83216e4F2ef132Ff4a1c6e0644C61d7Ac00D0fF5
+Adding a command to set the price oracle for Comptroller_Core
+Adding a command to add Comptroller_Core to PoolRegistry
+0xb0519C356238B6052A5c77eaD613d9721e70975f poolRegistry.address
+Adding market Venus WBTC (Core) to pool Core
+Adding market Venus WETH (Core) to pool Core
+Adding market Venus USDT (Core) to pool Core
+Adding a command to withdraw 30000000 WBTC to Timelock from Treasury
+Adding a command to withdraw 5000000000000000000 WETH to Timelock from Treasury
+Adding a command to withdraw 10000000000 USDT to Timelock from Treasury
+Adding commands to approve 30000000 WBTC to PoolRegistry
+Adding commands to approve 5000000000000000000 WETH to PoolRegistry
+Adding commands to approve 10000000000 USDT to PoolRegistry
+Adding a command to set reduce reserves blcok delta to Venus WBTC (Core)
+Adding a command to set reduce reserves blcok delta to Venus WETH (Core)
+Adding a command to set reduce reserves blcok delta to Venus USDT (Core)
+Adding a command to register Venus WBTC (Core) to PoolRegistry
+Adding a command to register Venus WETH (Core) to PoolRegistry
+Adding a command to register Venus USDT (Core) to PoolRegistry
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setCollateralFactor(address,uint256,uint256),
+  0xb0519C356238B6052A5c77eaD613d9721e70975f,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setMarketSupplyCaps(address[],uint256[]),
+  0xb0519C356238B6052A5c77eaD613d9721e70975f,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setMarketBorrowCaps(address[],uint256[]),
+  0xb0519C356238B6052A5c77eaD613d9721e70975f,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setLiquidationIncentive(uint256),
+  0xb0519C356238B6052A5c77eaD613d9721e70975f,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setCloseFactor(uint256),
+  0xb0519C356238B6052A5c77eaD613d9721e70975f,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setMinLiquidatableCollateral(uint256),
+  0xb0519C356238B6052A5c77eaD613d9721e70975f,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  supportMarket(address),
+  0xb0519C356238B6052A5c77eaD613d9721e70975f,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setCloseFactor(uint256),
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setReduceReservesBlockDelta(uint256),
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setCollateralFactor(address,uint256,uint256),
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setLiquidationIncentive(uint256),
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setMarketBorrowCaps(address[],uint256[]),
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setMarketSupplyCaps(address[],uint256[]),
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setActionsPaused(address[],uint256[],bool),
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setMinLiquidatableCollateral(uint256),
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  addPool(string,address,uint256,uint256,uint256),
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  addMarket(AddMarketInput),
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setPoolName(address,string),
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  updatePoolMetadata(address,VenusPoolMetaData),
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setProtocolSeizeShare(uint256),
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setReserveFactor(uint256),
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setInterestRateModel(address),
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setRewardTokenSpeeds(address[],uint256[],uint256[]),
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  setLastRewardingBlock(address[],uint32[],uint32[]),
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0x7bDC91Fe4918Abb737471D200c55A4e8de24C8cD.giveCallPermission(address,string,address) (
+  0x0000000000000000000000000000000000000000,
+  updateJumpRateModel(uint256,uint256,uint256,uint256),
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0xaFc186B4eF1efBa996419A976e6Bc4C5D4574476.setPriceOracle(address) (
+  0xF267aE9a4BA4DF92917E7f87D7FC0c6a9EB53485,
+)
+Executing 0xb0519C356238B6052A5c77eaD613d9721e70975f.addPool(string,address,uint256,uint256,uint256) (
+  Core,
+  0xaFc186B4eF1efBa996419A976e6Bc4C5D4574476,
+  500000000000000000,
+  1100000000000000000,
+  100000000000000000000,
+)
+Executing 0x83216e4F2ef132Ff4a1c6e0644C61d7Ac00D0fF5.withdrawTreasuryToken(address,uint256,address) (
+  0xa7c34430F201FCec57047E50426454aEFb9Ddf15,
+  30000000,
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0xa7c34430F201FCec57047E50426454aEFb9Ddf15.approve(address,uint256) (
+  0xb0519C356238B6052A5c77eaD613d9721e70975f,
+  0,
+)
+Executing 0xa7c34430F201FCec57047E50426454aEFb9Ddf15.approve(address,uint256) (
+  0xb0519C356238B6052A5c77eaD613d9721e70975f,
+  30000000,
+)
+Executing 0x4e4Cbd2075c187052cbF62e17eeb97e0aA44aD62.setReduceReservesBlockDelta(uint256) (
+  7200,
+)
+Executing 0xb0519C356238B6052A5c77eaD613d9721e70975f.addMarket((address,uint256,uint256,uint256,address,uint256,uint256)) (
+  0x4e4Cbd2075c187052cbF62e17eeb97e0aA44aD62,750000000000000000,800000000000000000,30000000,0x83216e4F2ef132Ff4a1c6e0644C61d7Ac00D0fF5,30000000000,25000000000,
+)
+Executing 0x83216e4F2ef132Ff4a1c6e0644C61d7Ac00D0fF5.withdrawTreasuryToken(address,uint256,address) (
+  0xB292afD1547EF1C65F4E9b79005481628FB42f6A,
+  5000000000000000000,
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0xB292afD1547EF1C65F4E9b79005481628FB42f6A.approve(address,uint256) (
+  0xb0519C356238B6052A5c77eaD613d9721e70975f,
+  0,
+)
+Executing 0xB292afD1547EF1C65F4E9b79005481628FB42f6A.approve(address,uint256) (
+  0xb0519C356238B6052A5c77eaD613d9721e70975f,
+  5000000000000000000,
+)
+Executing 0x6Ea7040354e93020F534C4D345f606D974cb51c4.setReduceReservesBlockDelta(uint256) (
+  7200,
+)
+Executing 0xb0519C356238B6052A5c77eaD613d9721e70975f.addMarket((address,uint256,uint256,uint256,address,uint256,uint256)) (
+  0x6Ea7040354e93020F534C4D345f606D974cb51c4,750000000000000000,800000000000000000,5000000000000000000,0x83216e4F2ef132Ff4a1c6e0644C61d7Ac00D0fF5,5500000000000000000000,4600000000000000000000,
+)
+Executing 0x83216e4F2ef132Ff4a1c6e0644C61d7Ac00D0fF5.withdrawTreasuryToken(address,uint256,address) (
+  0xBAc77FCc59C1897e11c0FAc6464D840fdb923A15,
+  10000000000,
+  0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C,
+)
+Executing 0xBAc77FCc59C1897e11c0FAc6464D840fdb923A15.approve(address,uint256) (
+  0xb0519C356238B6052A5c77eaD613d9721e70975f,
+  0,
+)
+Executing 0xBAc77FCc59C1897e11c0FAc6464D840fdb923A15.approve(address,uint256) (
+  0xb0519C356238B6052A5c77eaD613d9721e70975f,
+  10000000000,
+)
+Executing 0xb1DD1BbC691aBE79093f6025755bd7916D8353bA.setReduceReservesBlockDelta(uint256) (
+  7200,
+)
+Executing 0xb0519C356238B6052A5c77eaD613d9721e70975f.addMarket((address,uint256,uint256,uint256,address,uint256,uint256)) (
+  0xb1DD1BbC691aBE79093f6025755bd7916D8353bA,800000000000000000,820000000000000000,10000000000,0x83216e4F2ef132Ff4a1c6e0644C61d7Ac00D0fF5,10000000000000,9000000000000,
+)
+
+npx hardhat deploy --network neondevnet --tags NeonTestSupplyBorrow
+Mint of WETH to deployer successful -  0xae75c218fbc38406b29aad758c28f361415cc8d1e7c46a48c02a173ce225a4b8
+Mint of USDT to user successful -  0xa0ca336d9bdb488058c1de25d42c565379e636010e2e8ed4a293a457b551f0c1
+Deployer WBTC supply successful -  0xb11dfd9dc59673a220698ba9f9925509d66ef5031263f7a921a16a22d80b3aac
+User USDT supply successful -  0x687bc6d3b97b2db13f921497f35525b8defad9ca5c720c51dbb630a9e59f6b3d
+User WETH borrow successful -  0x2048c8e9c115419a2aaadb5ed871eb8c2ccb84d69515096d39d06b1f19dc6bc9
+User WETH repay successful -  0xc672f69069d937fb6f28681141224f4ba9833a15a1b6711cc06e71b2d39e43ab

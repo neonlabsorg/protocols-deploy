@@ -1,8 +1,12 @@
 import { BigNumberish } from "ethers";
 import { defaultAbiCoder, parseEther } from "ethers/lib/utils";
-import { ethers } from "hardhat";
+import { ethers, network } from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
+
+import {
+  MockPriceOracle__factory
+} from "../typechain";
 
 import {
   AccessControlEntry,
@@ -124,20 +128,27 @@ const acceptOwnership = async (
   ];
 };
 
-const setOracle = async (comptroller: Comptroller, pool: PoolConfig): Promise<GovernanceCommand> => {
-  const oracle = await ethers.getContract("ResilientOracle");
+const setOracle = async (comptroller: Comptroller, pool: PoolConfig, hre: HardhatRuntimeEnvironment): Promise<GovernanceCommand> => {
+  let oracleAddress;
+  if (hre.network.name === "neondevnet") {
+    oracleAddress = '0xF267aE9a4BA4DF92917E7f87D7FC0c6a9EB53485';
+  } else {
+    const oracle = await ethers.getContract("ResilientOracle");
+    oracleAddress = oracle.address;
+  }
   console.log(`Adding a command to set the price oracle for Comptroller_${pool.id}`);
   return {
     contract: comptroller.address,
     signature: "setPriceOracle(address)",
     argTypes: ["address"],
-    parameters: [oracle.address],
+    parameters: [oracleAddress],
     value: 0,
   };
 };
 
 const addPool = (poolRegistry: PoolRegistry, comptroller: Comptroller, pool: PoolConfig): GovernanceCommand => {
   console.log(`Adding a command to add Comptroller_${pool.id} to PoolRegistry`);
+  console.log(poolRegistry.address, 'poolRegistry.address');
   return {
     contract: poolRegistry.address,
     signature: "addPool(string,address,uint256,uint256,uint256)",
@@ -164,7 +175,7 @@ const addPools = async (
       const comptroller = await ethers.getContract<Comptroller>(`Comptroller_${pool.id}`);
       return [
         ...(await acceptOwnership(`Comptroller_${pool.id}`, poolsOwner, hre)),
-        await setOracle(comptroller, pool),
+        await setOracle(comptroller, pool, hre),
         addPool(poolRegistry, comptroller, pool),
       ];
     }),
@@ -363,6 +374,8 @@ const executeCommands = async (commands: GovernanceCommand[], hre: HardhatRuntim
       to: command.contract,
       data: txdata,
       value: command.value,
+      gasLimit: 200000000,
+      gasPrice: 500000000000
     });
     await tx.wait();
   }
@@ -383,19 +396,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     ...(await acceptOwnership("PoolRegistry", owner, hre)),
     ...(await addPools(unregisteredPools, owner, hre)),
     ...(await addMarkets(unregisteredVTokens, deploymentConfig, hre)),
-    ...(await configureRewards(unregisteredRewardsDistributors, owner, hre)),
+    //...(await configureRewards(unregisteredRewardsDistributors, owner, hre)),
   ];
 
-  if (hre.network.live) {
+  /* if (hre.network.live) {
     console.log("Please propose a VIP with the following commands:");
     console.log(
       JSON.stringify(
         commands.map(c => ({ target: c.contract, signature: c.signature, params: c.parameters, value: c.value })),
       ),
     );
-  } else {
+  } else { */
     await executeCommands(commands, hre);
-  }
+  //}
 };
 
 func.tags = ["VIP", "il"];

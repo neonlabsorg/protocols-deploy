@@ -23,9 +23,7 @@
     "prettier": "prettier --write \"**/*.{js,json,md,sol,ts,yaml,yml}\"",
     "prettier:check": "prettier --check \"**/*.{js,json,md,sol,ts,yaml,yml}\"",
     "build": "rm -rf dist && hardhat compile && tsc --declaration",
-    "docgen": "hardhat docgen",
-    "prepare": "husky install"
-    
+    "docgen": "hardhat docgen"
   },
   "repository": {
     "type": "git",
@@ -50,7 +48,8 @@
     "@venusprotocol/solidity-utilities": "^2.0.0",
     "ethers": "^5.7.0",
     "hardhat-deploy": "^0.11.14",
-    "module-alias": "^2.2.2"
+    "module-alias": "^2.2.2",
+    "stacktrace-parser": "^0.1.10"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.0.3",

@@ -138,7 +138,7 @@ export const blocksPerYear: BlocksPerYear = {
 };
 
 export const SEPOLIA_MULTISIG = "0x94fa6078b6b8a26f0b6edffbe6501b22a10470fb";
-export const NEON_DEVNET_MULTISIG = "0xb8f913C9AB9944891993F6c6fDAc421D98461294";
+export const NEON_DEVNET_MULTISIG = "0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C";
 export const ETHEREUM_MULTISIG = "0x285960C5B22fD66A736C7136967A3eB15e93CC67";
 export const OPBNBTESTNET_MULTISIG = "0xb15f6EfEbC276A3b9805df81b5FB3D50C2A62BDf";
 export const OPBNBMAINNET_MULTISIG = "0xC46796a21a3A9FAB6546aF3434F2eBfFd0604207";
@@ -2973,7 +2973,7 @@ export const globalConfig: NetworkConfig = {
         ],
         rewards: [],
       },
-      {
+      /* {
         id: "Stablecoins",
         name: "Stablecoins",
         closeFactor: convertToUnit("0.5", 18),
@@ -3000,7 +3000,7 @@ export const globalConfig: NetworkConfig = {
           },
         ],
         rewards: [],
-      },
+      }, */
     ],
     accessControlConfig: [
       ...poolRegistryPermissions(),
@@ -3923,11 +3923,16 @@ export function getBidderDeploymentValues(networkName: string): BidderDeployment
         waitForFirstBidder: 100,
         nextBidderBlockOrTimestampLimit: 100,
       };
-    case "sepolia":
-      return {
-        waitForFirstBidder: 25,
-        nextBidderBlockOrTimestampLimit: 25,
-      };
+      case "sepolia":
+        return {
+          waitForFirstBidder: 25,
+          nextBidderBlockOrTimestampLimit: 25,
+        };
+        case "neondevnet":
+          return {
+            waitForFirstBidder: 25,
+            nextBidderBlockOrTimestampLimit: 25,
+          };
     case "ethereum":
       return {
         waitForFirstBidder: 25,

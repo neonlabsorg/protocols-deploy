@@ -97,6 +97,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     }
   }
 };
-func.tags = ["RiskFund", "il"];
+func.tags = ["RiskFund"/* , "il" */];
 
 export default func;

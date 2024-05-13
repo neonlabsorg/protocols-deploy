@@ -242,9 +242,10 @@ const config: HardhatUserConfig = {
     },
     neondevnet: {
         url: "https://devnet.neonevm.org",
-        accounts: DEPLOYER_PRIVATE_KEY ? [`0x${DEPLOYER_PRIVATE_KEY}`] : [],
+        accounts: [process.env.DEPLOYER_PRIVATE_KEY, process.env.USER_PRIVATE_KEY],
         chainId: 245022926,
-        live: true
+        live: true,
+        gasPrice: 500000000000
     },
     opbnbtestnet: {
       url: process.env.ARCHIVE_NODE_opbnbtestnet || "https://opbnb-testnet-rpc.bnbchain.org",
@@ -277,6 +278,14 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     customChains: [
+        {
+            network: "neonevm",
+            chainId: 245022926,
+            urls: {
+                apiURL: "https://devnet-api.neonscan.org/hardhat/verify",
+                browserURL: "https://devnet.neonscan.org"
+            }
+        },
       {
         network: "bsctestnet",
         chainId: 97,
@@ -355,6 +364,7 @@ const config: HardhatUserConfig = {
       bsctestnet: process.env.ETHERSCAN_API_KEY || "ETHERSCAN_API_KEY",
       ethereum: process.env.ETHERSCAN_API_KEY || "ETHERSCAN_API_KEY",
       sepolia: process.env.ETHERSCAN_API_KEY || "ETHERSCAN_API_KEY",
+      neonevm: process.env.ETHERSCAN_API_KEY || "test",
       opbnbmainnet: process.env.ETHERSCAN_API_KEY || "ETHERSCAN_API_KEY",
       opbnbtestnet: process.env.ETHERSCAN_API_KEY || "ETHERSCAN_API_KEY",
       arbitrumone: process.env.ETHERSCAN_API_KEY || "ETHERSCAN_API_KEY",
