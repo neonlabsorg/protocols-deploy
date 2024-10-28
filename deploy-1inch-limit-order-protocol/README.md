@@ -12,14 +12,18 @@ Returns the following output:
 
 ```
 1inch limit order protocol tests:
-0x011910f2ccff811c8fd645b14ccda1d4b7a627618655140d28e6e18e9ccb5879 cancelOrder tx
+0x3752eb1d3c205ed9c3f108e7e1bb6dde0292ad5d020a23d51309c5825544d805 cancelOrder tx
       ✔ Test cancel order
-0xd530d340df3e50d313bdc63c1f4e6cbba9bea200987375b11d41e389ae8f4f5c maker approval tx
-0x46cba073b97e43efc1929265f3ddb2d3cae55d54ac88406a130fcac2199a0d79 taker approval tx
-0x16671b47844afdf02bf3ee03da32ca2bc06401929f9bfac674f6a5f64f497521 fillOrder tx
-      ✔ Test filling order from an EOA
-0x567e2e550248efdcd260a0d897179d0d0d076fc67528a77c979f67a5ac07385d maker approval tx
-0xd4f1add16cb1716c033184c58bcc3b4216d2063e84f9221aaa29a9256959e3ad taker load tx
-0x4a68aecac0eccc5375f4319a4a8abb49576126ce0b635f6a668b71dd1da4f03c fillOrder tx
-      ✔ Test filling order from a smart contract
+0x3ade576a517d5c9c91af11db45fb7be46b6814bb7683f2f73dfc110192c49355 maker approval tx
+0xe4dc6372fcbff4bf4374df48099c5f2377c4930bcf0efb2e529c7db2de313738 taker approval tx
+0x1fe99cfafc211810141195836ecd71df0b21fca3be64d12d7a8bfdec5389b13f fillOrder tx
+      ✔ Test filling order from an EOA ( USDC => WNEON order )
+0x970c016add0e7affd8aa1f6b98ece1aadb55bf033b5a45b112bf3b52b9616586 maker approval tx
+0x7f8bbb69aefc12b8289fa8018db571ccbae52fa83d3336d79a773d83a2431625 taker approval tx
+0x118d1b1aad690ba885dd4b3fa1e26574401c4abfee7b64cfda46dd9c5e289e03 fillOrder tx
+      ✔ Test filling order from an EOA ( USDC => WSOL order )
+0xb045b9417300f7154daff20ef20b329d60f6cb9984872a06992f5b3a95fbaef1 maker approval tx
+0x5128978acf2e67ea7159c14d9d82a40025e406aa712f3d23447a7bece3e75a3f taker load tx
+0x019b7fc4ac70c17edfcda13f9f1a7237ec8d2a958491fd83fe233a262ae6e1f6 fillOrder tx
+      ✔ Test filling order from a smart contract ( USDC => WNEON order )
 ```
