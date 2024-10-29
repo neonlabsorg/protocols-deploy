@@ -1,6 +1,6 @@
 # PancakeSwap predictions on Neon EVM
 
-The following repo represents an instance of the PancakeSwaps's predictions protocol deployed on Neon EVM. The protocol is deployed & verified at [https://neon.blockscout.com/address/0x88F4d22ba3118F2572AE904d3b271A1068c77aC3](https://neon.blockscout.com/address/0x88F4d22ba3118F2572AE904d3b271A1068c77aC3).
+The following repo represents an instance of the PancakeSwaps's predictions protocol deployed on Neon EVM. The protocol is deployed & verified at [https://neon-devnet.blockscout.com/address/0x88F4d22ba3118F2572AE904d3b271A1068c77aC3](https://neon-devnet.blockscout.com/address/0x88F4d22ba3118F2572AE904d3b271A1068c77aC3).
 
 ### Deploy
 ```npx hardhat run scripts/deploy.js --network neonmainnet```
