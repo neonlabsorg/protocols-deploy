@@ -10,10 +10,12 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 /**
- * @title PancakePredictionV2
+ * @title PancakePredictionV3
  */
-contract PancakePredictionV2 is Ownable, Pausable, ReentrancyGuard {
+contract PancakePredictionV3 is Ownable, Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
+
+    IERC20 public immutable token; // Prediction token
 
     AggregatorV3Interface public oracle;
 
@@ -119,6 +121,7 @@ contract PancakePredictionV2 is Ownable, Pausable, ReentrancyGuard {
 
     /**
      * @notice Constructor
+     * @param _token: prediction token
      * @param _oracleAddress: oracle address
      * @param _adminAddress: admin address
      * @param _operatorAddress: operator address
@@ -129,6 +132,7 @@ contract PancakePredictionV2 is Ownable, Pausable, ReentrancyGuard {
      * @param _treasuryFee: treasury fee (1000 = 10%)
      */
     constructor(
+        IERC20 _token,
         address _oracleAddress,
         address _adminAddress,
         address _operatorAddress,
@@ -140,6 +144,7 @@ contract PancakePredictionV2 is Ownable, Pausable, ReentrancyGuard {
     ) {
         require(_treasuryFee <= MAX_TREASURY_FEE, "Treasury fee too high");
 
+        token = _token;
         oracle = AggregatorV3Interface(_oracleAddress);
         adminAddress = _adminAddress;
         operatorAddress = _operatorAddress;
@@ -154,14 +159,15 @@ contract PancakePredictionV2 is Ownable, Pausable, ReentrancyGuard {
      * @notice Bet bear position
      * @param epoch: epoch
      */
-    function betBear(uint256 epoch) external payable whenNotPaused nonReentrant notContract {
+    function betBear(uint256 epoch, uint256 _amount) external whenNotPaused nonReentrant notContract {
         require(epoch == currentEpoch, "Bet is too early/late");
         require(_bettable(epoch), "Round not bettable");
-        require(msg.value >= minBetAmount, "Bet amount must be greater than minBetAmount");
+        require(_amount >= minBetAmount, "Bet amount must be greater than minBetAmount");
         require(ledger[epoch][msg.sender].amount == 0, "Can only bet once per round");
 
+        token.safeTransferFrom(msg.sender, address(this), _amount);
         // Update round data
-        uint256 amount = msg.value;
+        uint256 amount = _amount;
         Round storage round = rounds[epoch];
         round.totalAmount = round.totalAmount + amount;
         round.bearAmount = round.bearAmount + amount;
@@ -179,14 +185,15 @@ contract PancakePredictionV2 is Ownable, Pausable, ReentrancyGuard {
      * @notice Bet bull position
      * @param epoch: epoch
      */
-    function betBull(uint256 epoch) external payable whenNotPaused nonReentrant notContract {
+    function betBull(uint256 epoch, uint256 _amount) external whenNotPaused nonReentrant notContract {
         require(epoch == currentEpoch, "Bet is too early/late");
         require(_bettable(epoch), "Round not bettable");
-        require(msg.value >= minBetAmount, "Bet amount must be greater than minBetAmount");
+        require(_amount >= minBetAmount, "Bet amount must be greater than minBetAmount");
         require(ledger[epoch][msg.sender].amount == 0, "Can only bet once per round");
 
+        token.safeTransferFrom(msg.sender, address(this), _amount);
         // Update round data
-        uint256 amount = msg.value;
+        uint256 amount = _amount;
         Round storage round = rounds[epoch];
         round.totalAmount = round.totalAmount + amount;
         round.bullAmount = round.bullAmount + amount;
@@ -232,7 +239,7 @@ contract PancakePredictionV2 is Ownable, Pausable, ReentrancyGuard {
         }
 
         if (reward > 0) {
-            _safeTransferBNB(address(msg.sender), reward);
+            token.safeTransfer(msg.sender, reward);
         }
     }
 
@@ -308,16 +315,16 @@ contract PancakePredictionV2 is Ownable, Pausable, ReentrancyGuard {
     function claimTreasury() external nonReentrant onlyAdmin {
         uint256 currentTreasuryAmount = treasuryAmount;
         treasuryAmount = 0;
-        _safeTransferBNB(adminAddress, currentTreasuryAmount);
-
+        token.safeTransfer(adminAddress, currentTreasuryAmount);
         emit TreasuryClaim(currentTreasuryAmount);
     }
 
     /**
      * @notice called by the admin to unpause, returns to normal state
      * Reset genesis state. Once paused, the rounds would need to be kickstarted by genesis
+     * @dev Callable by admin or operator
      */
-    function unpause() external whenPaused onlyAdmin {
+    function unpause() external whenPaused onlyAdminOrOperator {
         genesisStartOnce = false;
         genesisLockOnce = false;
         _unpause();
@@ -406,6 +413,7 @@ contract PancakePredictionV2 is Ownable, Pausable, ReentrancyGuard {
      * @dev Callable by owner
      */
     function recoverToken(address _token, uint256 _amount) external onlyOwner {
+        require(_token != address(token), "Cannot be prediction token address");
         IERC20(_token).safeTransfer(address(msg.sender), _amount);
 
         emit TokenRecovery(_token, _amount);
@@ -601,16 +609,6 @@ contract PancakePredictionV2 is Ownable, Pausable, ReentrancyGuard {
             "Can only start new round after round n-2 closeTimestamp"
         );
         _startRound(epoch);
-    }
-
-    /**
-     * @notice Transfer BNB in a safe way
-     * @param to: address to transfer BNB to
-     * @param value: BNB amount to transfer (in wei)
-     */
-    function _safeTransferBNB(address to, uint256 value) internal {
-        (bool success, ) = to.call{value: value}("");
-        require(success, "TransferHelper: BNB_TRANSFER_FAILED");
     }
 
     /**

@@ -9,20 +9,21 @@ const { ethers } = require("hardhat");
 async function main() {
     const [owner] = await ethers.getSigners();
     console.log(owner, 'owner');
-    const PancakePredictionV2 = await ethers.deployContract('PancakePredictionV2', [
-        '0x7235B04963600fA184f6023696870F49d014416d',
+    const PancakePredictionV3 = await ethers.deployContract('PancakePredictionV3', [
+        '0xc7Fc9b46e479c5Cb42f6C458D1881e55E6B7986c', // WSOL
+        '0xec852B2A009f49E4eE4ffEddeDcF81a1AD1bbD6d', // CHAINLINK SOL/ USD
         owner.address,
         owner.address,
-        300,
-        299,
-        '1000000000000000',
+        60,
+        59,
+        10000,
         300,
         1000
     ]);
-    await PancakePredictionV2.waitForDeployment();
+    await PancakePredictionV3.waitForDeployment();
 
     console.log(
-        `PancakePredictionV2 token deployed to ${PancakePredictionV2.target}`
+        `PancakePredictionV3 token deployed to ${PancakePredictionV3.target}`
     );
 }
 

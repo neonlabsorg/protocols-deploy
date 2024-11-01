@@ -1,12 +1,12 @@
-# PancakeSwap predictions on Neon EVM
+# PancakeSwap predictions with SPLTokens on Neon EVM
 
-The following repo represents an instance of the PancakeSwaps's predictions protocol deployed on Neon EVM. The protocol is deployed & verified at [https://neon-devnet.blockscout.com/address/0x88F4d22ba3118F2572AE904d3b271A1068c77aC3](https://neon-devnet.blockscout.com/address/0x88F4d22ba3118F2572AE904d3b271A1068c77aC3).
+The following repo represents an instance of the PancakeSwaps's predictions protocol with **WSOL** SPLToken deployed on Neon EVM. The protocol is deployed & verified at [https://neon-devnet.blockscout.com/address/0x445d9a385902312cB87AA366342dD634ced85F95](https://neon-devnet.blockscout.com/address/0x445d9a385902312cB87AA366342dD634ced85F95).
 
 ### Deploy
 ```npx hardhat run scripts/deploy.js --network neonmainnet```
 
 ### Manual tests
-* User X betting on **UP** - [transaction hash](https://neon-devnet.blockscout.com/tx/0x335209a25629c6a0e704eb18120f7561a19a04975ed501a7d0af23b176c218ac)
-* User Y betting on **DOWN** - [transaction hash](https://neon-devnet.blockscout.com/tx/0xfab89b5c05df8fe158886a27d084b04d243034d8d50738e02777935885a7719d)
-* The protocol operator refreshing the current round & picking a winner side - [transaction hash](https://neon-devnet.blockscout.com/tx/0x147583b4fa3da608ade90ab1c04759aa3f54085e697bbd13d9abf90f952f5e48)
-* User Y claiming his rewards - [transaction hash](https://neon-devnet.blockscout.com/tx/0x1b8e87aa5829ff19338ddc5b2f10797e892dcbf497d50b064ae7580bf63e97e8)
+* BULL betting WSOL on **UP** - [transaction hash](https://neon-devnet.blockscout.com/tx/0x5c4d51378fa7914d1853818bb75b857c850f88dea553d5592963541cd5bd81be)
+* BEAR betting WSOL on **DOWN** - [transaction hash](https://neon-devnet.blockscout.com/tx/0x5963eb998c039d6022f545f24ccb7aee90addeecc5bce944b08f025d2ca681a0)
+* The protocol operator refreshing the current round & picking a winner side _( BULL )_ - [transaction hash](https://neon-devnet.blockscout.com/tx/0xcb7c8537a9cebb835d9c43aa85c50ed025c799c23b3d66d106d45b64a8cae35b)
+* BULL claiming his WSOL reward - [transaction hash](https://neon-devnet.blockscout.com/tx/0x77b2cb6ed9fc5c91be1de420553d70ce56f501b5255547bfa38a433eb3af913d)

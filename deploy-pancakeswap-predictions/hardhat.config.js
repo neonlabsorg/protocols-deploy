@@ -6,13 +6,12 @@ module.exports = {
   solidity: {
         compilers:[
             {
-                version: '0.8.23',
+                version: '0.8.4',
                 settings: {
-                    optimizer: {
-                        enabled: true,
-                        runs: 1_000_000,
-                    },
-                    viaIR: true,
+                  optimizer: {
+                    enabled: true,
+                    runs: 99999,
+                  },
                 },
             },
         ],
@@ -47,15 +46,7 @@ module.exports = {
       chainId: 245022926,
       allowUnlimitedContractSize: false,
       gas: "auto",
-      gasPrice: "auto",
-    },
-    neonmainnet: {
-      url: "https://neon-proxy-mainnet.solana.p2p.org",
-      accounts: [process.env.PRIVATE_KEY_OWNER, process.env.USER1_KEY],
-      chainId: 245022934,
-      allowUnlimitedContractSize: false,
-      gas: "auto",
-      gasPrice: "auto",
+      gasPrice: 2500000000000,
     },
   },
   mocha: {
