@@ -3,10 +3,10 @@
 The following repo represents an instance of the PancakeSwaps's predictions protocol with **WSOL** SPLToken deployed on Neon EVM. The protocol is deployed & verified at [https://neon-devnet.blockscout.com/address/0x445d9a385902312cB87AA366342dD634ced85F95](https://neon-devnet.blockscout.com/address/0x445d9a385902312cB87AA366342dD634ced85F95).
 
 ### Deploy
-```npx hardhat run scripts/deploy.js --network neonmainnet```
+```npx hardhat run scripts/deploy.js --network neondevnet```
 
 ### Testing
-```npx hardhat test test/TestLimitOrderProtocol.js --network neonmainnet```
+```npx hardhat test test/TestLimitOrderProtocol.js --network neondevnet§```
 
 * BULL betting WSOL on **UP** - [transaction hash](https://neon-devnet.blockscout.com/tx/0x5c4d51378fa7914d1853818bb75b857c850f88dea553d5592963541cd5bd81be)
 * BEAR betting WSOL on **DOWN** - [transaction hash](https://neon-devnet.blockscout.com/tx/0x5963eb998c039d6022f545f24ccb7aee90addeecc5bce944b08f025d2ca681a0)
