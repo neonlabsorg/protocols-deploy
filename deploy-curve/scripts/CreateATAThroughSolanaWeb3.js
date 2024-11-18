@@ -4,7 +4,8 @@ const {
     createAssociatedTokenAccountInstruction,
     getAssociatedTokenAddressSync,
     TOKEN_PROGRAM_ID,
-    ASSOCIATED_TOKEN_PROGRAM_ID
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+    getAccount
 } = require('@solana/spl-token');
 
 const connection = new web3.Connection('https://curve-stand.neontest.xyz/solana', "processed");
@@ -15,9 +16,11 @@ const keypair = web3.Keypair.fromSecretKey(Uint8Array.from(new Uint8Array(JSON.p
 console.log(keypair.publicKey.toBase58(), 'payer');
 
 const publicKey = new web3.PublicKey('8HzCjhBNP3rs7SydUrZAiQGEoqXHNtpNPE475zzHmzba'); // set your public key here
+
+// set your token mint keys here
 const tokenMintsArray = [
-    '9jgF9jg95TzbJwCePmLeS6XcbqFDy4tL6uV9fC7JNVVw',
-    '5gNTwcer8D5N8RVD6kHXgfoM9JErRDE9WyDEGcHk2u8A' // set your token mint key here
+    '5gNTwcer8D5N8RVD6kHXgfoM9JErRDE9WyDEGcHk2u8A',
+    '9jgF9jg95TzbJwCePmLeS6XcbqFDy4tL6uV9fC7JNVVw'
 ];
 let atasToBeCreated = '';
 
@@ -52,6 +55,8 @@ async function init() {
                     ASSOCIATED_TOKEN_PROGRAM_ID
                 )
             );
+        } else {
+            console.log(await getAccount(connection, associatedToken), 'associatedToken data');
         }
     }
 

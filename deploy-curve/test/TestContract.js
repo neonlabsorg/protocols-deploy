@@ -64,22 +64,25 @@ describe('TestERC4626Kamino tests:', async function () {
 
     describe('Tests:', function() {
         it('Mint tokens to mock contracts', async function () {
-            console.log(await TokenA.balanceOf(TestContract.target), 'await TokenA.balance(TestContract.target)');
+            /* console.log(await TokenA.balanceOf(TestContract.target), 'await TokenA.balance(TestContract.target)');
             console.log(await TokenB.balanceOf(MockCurve.target), 'await TokenB.balance(MockCurve.target)');
 
-            /* let tx = await TokenA.connect(owner).mint(TestContract.target, 10 * 10 ** 6);
+            let tx = await TokenA.connect(owner).mint(TestContract.target, 10 * 10 ** 6);
             await tx.wait(1);
             console.log(tx, 'TokenA mint');
 
             tx = await TokenB.connect(owner).mint(MockCurve.target, 10 * 10 ** 6);
             await tx.wait(1);
-            console.log(tx, 'TokenB mint'); */
+            console.log(tx, 'TokenB mint');
 
             console.log(await TokenA.balanceOf(TestContract.target), 'await TokenA.balance(TestContract.target)');
-            console.log(await TokenB.balanceOf(MockCurve.target), 'await TokenB.balance(MockCurve.target)');
+            console.log(await TokenB.balanceOf(MockCurve.target), 'await TokenB.balance(MockCurve.target)'); */
         });
 
         it('Test SVM signing', async function () {
+            console.log(await TokenA.balanceOf(TestContract.target), 'await TokenA.balance(TestContract.target)');
+            console.log(await TokenB.balanceOf(MockCurve.target), 'await TokenB.balance(MockCurve.target)');
+
             const keypair = web3.Keypair.fromSecretKey(Uint8Array.from(new Uint8Array(JSON.parse(fs.readFileSync(process.env.ANCHOR_WALLET).toString()))));
             const signerAddress = keypair.publicKey;
             console.log(signerAddress, 'signerAddress');
@@ -108,12 +111,12 @@ describe('TestERC4626Kamino tests:', async function () {
                 intent: '0x',
                 intentCallData: '0x',
                 target: TestContract.target,
-                callData: '0x991ed50600000000000000000000000000000000000000000000000000000000000f424081cc434020d472bee893eedbbb7c4b1624cdfddd3a7f7706e21809bba02af756',
+                callData: TestContract.interface.encodeFunctionData("exchange", [1 * 10 ** 6, "0x27f33b589095467766a5c83ed503e93b8ed8e3689024bd27b5356fef0adee27d"]),
                 value: '0x',
                 chainID: chainId,
-                gasLimit: ethers.toBeHex(2600000),
-                maxFeePerGas: ethers.toBeHex(2600000000),
-                maxPriorityFeePerGas: ethers.toBeHex(12)
+                gasLimit: ethers.toBeHex(3000000),
+                maxFeePerGas: ethers.toBeHex(3000000000),
+                maxPriorityFeePerGas: ethers.toBeHex(15)
             };
             console.log(txBody, 'txBody');
 
@@ -128,20 +131,11 @@ describe('TestERC4626Kamino tests:', async function () {
                 config.utils.SolanaNativeHelpers.numberToBuffer([neonSubType]), 
                 config.utils.SolanaNativeHelpers.hexToBuffer(ethers.encodeRlp(result))
             ]).toString('hex');
-            console.log(neonTransaction, 'neonTransaction\n');
 
             const [balanceAddress] = config.utils.SolanaNativeHelpers.neonBalanceProgramAddressSync(payer, neonEvmProgram, parseInt(chainId, 16));
-            console.log(balanceAddress, 'balanceAddress');
-
             const [treeAccountAddress] = config.utils.SolanaNativeHelpers.neonTreeAccountAddressSync(payer, neonEvmProgram, nonce);
-            console.log(treeAccountAddress, 'treeAccountAddress');
-
             const [authorityPoolAddress] = config.utils.SolanaNativeHelpers.neonAuthorityPoolAddressSync(neonEvmProgram);
-            console.log(authorityPoolAddress, 'authorityPoolAddress');
-
             const associatedTokenAddress = await getAssociatedTokenAddress(new web3.PublicKey('So11111111111111111111111111111111111111112'), authorityPoolAddress, true);
-            console.log(associatedTokenAddress, 'associatedTokenAddress');
-
             const index = Math.floor(Math.random() * neon_getEvmParams.result.neonTreasuryPoolCount) % neon_getEvmParams.result.neonTreasuryPoolCount;
 
             const treasuryPool = {
@@ -188,7 +182,7 @@ describe('TestERC4626Kamino tests:', async function () {
                     await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature });
                 }
 
-                console.log(`Transaction${name ? ` ${name}` : ''} signature: ${signature}`);
+                console.log(`\nTransaction${name ? ` ${name}` : ''} signature: ${signature}`);
                 console.log(`\nhttps://explorer.solana.com/tx/${signature}?cluster=custom&customUrl=${process.env.SVM_NODE}`);
             }
         });

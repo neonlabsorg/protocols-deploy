@@ -94,7 +94,6 @@ const config = {
                     treasuryPool,
                     neonTransaction
                 } = instructionData;
-                console.log(instructionData, 'instructionData');
 
                 // airdrop SOLs to treasury
                 const airdropSolsRequest = await fetch(node, {
@@ -103,8 +102,6 @@ const config = {
                     headers: { 'Content-Type': 'application/json' }
                 });
                 const airdropSolsResponse = await airdropSolsRequest.json();
-
-                console.log(await connection.getBalance(treasuryPool.publicKey), treasuryPool.publicKey, 'treasuryPool.publicKey');
               
                 const keys = [
                     { pubkey: signerAddress, isSigner: true, isWritable: true },
