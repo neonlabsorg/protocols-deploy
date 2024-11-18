@@ -134,11 +134,11 @@ const config = {
             const seed = [
                 new Uint8Array([0x03]),
                 new Uint8Array(Buffer.from('ContractData', 'utf-8')),
-                Buffer.from(tokenEvmAddress.substring(2), 'hex'),
+                Buffer.from(tokenEvmAddress.substring(2), 'hex'), // UNIQUE
                 Buffer.from(neonAccountAddressBytes, 'hex')
             ];
         
-            return web3.PublicKey.findProgramAddressSync(seed, neonEvmProgram);
+            return web3.PublicKey.findProgramAddressSync(seed, neonEvmProgram); // secondary token account
         },
         isValidHex: function(hex) {
             const isHexStrict = /^(0x)?[0-9a-f]*$/i.test(hex.toString());
