@@ -12,7 +12,7 @@ if (process.env.ANCHOR_WALLET == undefined) {
     return console.error('Please create id.json in the root of the hardhat project with your Solana\'s private key and run the following command in the terminal in order to proceed with the script execution: \n\n export ANCHOR_WALLET=./id.json');
 }
 
-describe('TestERC4626Kamino tests:', async function () {
+describe('TestContract tests:', async function () {
     const connection = new web3.Connection(process.env.SVM_NODE, "processed");
     let owner, user;
     let TokenA;
