@@ -16,11 +16,10 @@ if (process.env.ANCHOR_WALLET == undefined) {
 const keypair = web3.Keypair.fromSecretKey(Uint8Array.from(new Uint8Array(JSON.parse(fs.readFileSync(process.env.ANCHOR_WALLET).toString()))));
 console.log(keypair.publicKey.toBase58(), 'payer');
 
-const publicKey = new web3.PublicKey(''); // set your contractPublicKey here
+const publicKey = new web3.PublicKey('GTCiwBTTE4BkHLAWiemrPzZxaBVD8iR3tPHmjLCEjiYL'); // set your contractPublicKey here
 const tokenMintsArray = [
-    config.DATA.SVM.ADDRESSES.USDC,
-    config.DATA.SVM.ADDRESSES.WSOL,
-    config.DATA.SVM.ADDRESSES.RAYDIUM_SOL_USDC_POOL_LP_MINT
+    config.DATA.SVM.ADDRESSES.KAMINO_RESERVE_USDC,
+    config.DATA.SVM.ADDRESSES.USDC
 ];
 let atasToBeCreated = '';
 
@@ -29,6 +28,9 @@ async function init() {
         return console.error('\nYou need at least 0.01 SOL in your wallet to proceed with transactions execution.');
     }
     const transaction = new web3.Transaction();
+    transaction.add(web3.ComputeBudgetProgram.setComputeUnitPrice({ 
+        microLamports: 100000
+    }));
 
     for (let i = 0, len = tokenMintsArray.length; i < len; ++i) {
         const associatedToken = getAssociatedTokenAddressSync(

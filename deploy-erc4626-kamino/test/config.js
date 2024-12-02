@@ -1,26 +1,8 @@
 const web3 = require("@solana/web3.js");
-const {
-    Liquidity,
-    Token,
-    TOKEN_PROGRAM_ID,
-    TokenAmount, 
-    Fraction, 
-    Currency, 
-    CurrencyAmount, 
-    Price, 
-    Percent,
-    LIQUIDITY_STATE_LAYOUT_V4,
-    MARKET_STATE_LAYOUT_V3,
-    SPL_MINT_LAYOUT,
-    SPL_ACCOUNT_LAYOUT,
-    Market
-} = require('@raydium-io/raydium-sdk');
-const fs = require('fs');
-const { BN } = require('bn.js');
 
 const config = {
-    SOLANA_NODE: 'https://mainnet.helius-rpc.com/?api-key=3f6827ad-c6d8-4b6b-bce2-756ad98a097c',
-    //SOLANA_NODE: 'https://personal-access-mainnet.sol-rpc.neoninfra.xyz:8503/p4o4i8Ew0uGelojCvH6jXEZ4Vr1ueij3FXB69Aeb',
+    SOLANA_NODE: 'https://multi-aged-slug.solana-mainnet.quiknode.pro/9574b5ff21fbf0d63c0d3a3a5c8bae4f044039af',
+    //SOLANA_NODE: 'https://mainnet.helius-rpc.com/?api-key=b16ea4e8-7111-4e66-8d4f-4f7775fd059e',
     DATA: {
         SVM: {
             ADDRESSES: {
@@ -30,13 +12,6 @@ const config = {
                 WBTC: '3NZ9JMVBmGAqocybic2c7LQCJScmgsAZ6vQqTDzcqmJh',
                 RAY: '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R',
                 NEON_PROGRAM: 'NeonVMyRX5GbCrsAHnUwx1nYYoJAtskU1bWUo6JGNyG',
-                RAYDIUM_PROGRAM: '675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8',
-                RAYDIUM_RAY_USDC_POOL: '6UmmUiYoBjSrhakAobJw8BvkmJtDVxaeBtbt7rxWo1mg',
-                RAYDIUM_RAY_SOL_POOL: 'AVs9TA4nWDzfPJE9gGVNJMVhcQy3V9PGazuz33BfG2RA',
-                RAYDIUM_SOL_USDC_POOL: '58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2',
-                RAYDIUM_SOL_USDC_POOL_LP_MINT: '8HoQnePLqPj4M7PUDzfw8e3Ymdwgc7NLGnaTUapubyvu',
-                RAYDIUM_SOL_WBTC_POOL: 'HCfytQ49w6Dn9UhHCqjNYTZYQ6z5SwqmsyYYqW4EKDdA',
-                RAYDIUM_SOL_USDT_POOL: '7XawhbbxtsRcQA8KTkHT9f9nc6d69UwqCDh6U5EEbEmX',
                 KAMINO_MAIN_MARKET: '7u3HeHxYDLhnCoErrtycNokbQYbWGzLs6JSDqGAv5PfF',
                 KAMINO_RESERVE_USDC: 'B8V6WVjPxW1UGwVDfxH2d2r8SyT4cqn7dQRK6XneVa7D',
             }
@@ -170,185 +145,6 @@ const config = {
               throw Error(`Could not load market ${marketPubkey.toString()}`);
             }
             return market;
-        }
-    },
-    raydiumHelper: {
-        calcAmountOut: async function(connection, poolKeys, rawAmountIn, swapInDirection, slippage) {
-            const poolInfo = await Liquidity.fetchInfo({ connection: connection, poolKeys });
-            let currencyInMint = poolKeys.baseMint
-            let currencyInDecimals = poolInfo.baseDecimals
-            let currencyOutMint = poolKeys.quoteMint
-            let currencyOutDecimals = poolInfo.quoteDecimals
-        
-            if (!swapInDirection) {
-                currencyInMint = poolKeys.quoteMint
-                currencyInDecimals = poolInfo.quoteDecimals
-                currencyOutMint = poolKeys.baseMint
-                currencyOutDecimals = poolInfo.baseDecimals
-            }
-        
-            const currencyIn = new Token(TOKEN_PROGRAM_ID, currencyInMint, currencyInDecimals)
-            const currencyOut = new Token(TOKEN_PROGRAM_ID, currencyOutMint, currencyOutDecimals)
-            const amountIn = new TokenAmount(currencyIn, rawAmountIn, false)
-            const { amountOut, minAmountOut, currentPrice, executionPrice, priceImpact, fee } = Liquidity.computeAmountOut({
-                poolKeys,
-                poolInfo,
-                amountIn,
-                currencyOut,
-                slippage: new Percent(slippage, 100)
-            })
-        
-            return [
-                amountIn,
-                amountOut,
-                minAmountOut,
-                currentPrice,
-                executionPrice,
-                priceImpact,
-                fee
-            ];
-        },
-        calcAmountIn: async function(connection, poolKeys, rawAmountOut, swapInDirection, slippage) {
-            const poolInfo = await Liquidity.fetchInfo({ connection: connection, poolKeys });
-            let currencyInMint = poolKeys.baseMint
-            let currencyInDecimals = poolInfo.baseDecimals
-            let currencyOutMint = poolKeys.quoteMint
-            let currencyOutDecimals = poolInfo.quoteDecimals
-        
-            if (!swapInDirection) {
-                currencyInMint = poolKeys.quoteMint
-                currencyInDecimals = poolInfo.quoteDecimals
-                currencyOutMint = poolKeys.baseMint
-                currencyOutDecimals = poolInfo.baseDecimals
-            }
-        
-            const currencyIn = new Token(TOKEN_PROGRAM_ID, currencyInMint, currencyInDecimals)
-            const currencyOut = new Token(TOKEN_PROGRAM_ID, currencyOutMint, currencyOutDecimals)
-            const amountOut = new TokenAmount(currencyOut, rawAmountOut, false)
-            const { amountIn, maxAmountIn, currentPrice, executionPrice, priceImpact } = Liquidity.computeAmountIn({
-                poolKeys,
-                poolInfo,
-                amountOut,
-                currencyIn,
-                slippage: new Percent(slippage, 100)
-            })
-        
-            return [
-                amountIn,
-                amountOut,
-                maxAmountIn,
-                currentPrice,
-                executionPrice,
-                priceImpact
-            ];
-        },
-        findPoolInfoForTokens: async function(liquidityFile, mintA, mintB) {
-            const liquidityJson = JSON.parse(fs.readFileSync(__dirname + '/' + liquidityFile, 'utf8'));
-
-            /* const liquidityJsonResp = await fetch(liquidityFile);
-            if (!liquidityJsonResp.ok) return
-            const liquidityJson = (await liquidityJsonResp.json()) */
-
-            const allPoolKeysJson = [...(liquidityJson?.official ?? []), ...(liquidityJson?.unOfficial ?? [])]
-        
-            const poolData = allPoolKeysJson.find(
-                (i) => (i.baseMint === mintA && i.quoteMint === mintB) || (i.baseMint === mintB && i.quoteMint === mintA)
-            )
-          
-            if (!poolData) {
-                return null;
-            } else {
-                return config.raydiumHelper.jsonInfo2PoolKeys(poolData);
-            }
-        },
-        jsonInfo2PoolKeys: function(jsonInfo) {
-            // @ts-expect-error no need type for inner code
-            return typeof jsonInfo === 'string'
-              ? config.raydiumHelper.validateAndParsePublicKey(jsonInfo)
-              : Array.isArray(jsonInfo)
-              ? jsonInfo.map((k) => config.raydiumHelper.jsonInfo2PoolKeys(k))
-              : config.raydiumHelper.notInnerObject(jsonInfo)
-              ? Object.fromEntries(Object.entries(jsonInfo).map(([k, v]) => [k, config.raydiumHelper.jsonInfo2PoolKeys(v)]))
-              : jsonInfo
-        },
-        validateAndParsePublicKey: function (publicKey) {
-            if (publicKey instanceof web3.PublicKey) {
-                return publicKey
-            }
-          
-            if (typeof publicKey === 'string') {
-              try {
-                const key = new web3.PublicKey(publicKey)
-                return key
-              } catch {
-                throw new Error('invalid public key', 'publicKey', publicKey)
-              }
-            }
-            throw new Error('invalid public key', 'publicKey', publicKey)
-        },
-        notInnerObject: function(v) {
-            return (
-                typeof v === 'object' &&
-                v !== null &&
-                ![TokenAmount, web3.PublicKey, Fraction, BN, Currency, CurrencyAmount, Price, Percent].some(
-                    (o) => typeof o === 'object' && v instanceof o,
-                )
-            )
-        },
-        formatAmmKeysById: async function(connection, id) {
-            const account = await connection.getAccountInfo(new web3.PublicKey(id));
-            if (account === null) throw Error(' get id info error ')
-            const info = LIQUIDITY_STATE_LAYOUT_V4.decode(account.data);
-          
-            const marketId = info.marketId
-            const marketAccount = await connection.getAccountInfo(marketId);
-            if (marketAccount === null) throw Error(' get market info error')
-            const marketInfo = MARKET_STATE_LAYOUT_V3.decode(marketAccount.data)
-          
-            const lpMint = info.lpMint
-            const lpMintAccount = await connection.getAccountInfo(lpMint);
-            if (lpMintAccount === null) throw Error(' get lp mint info error')
-            const lpMintInfo = SPL_MINT_LAYOUT.decode(lpMintAccount.data)
-          
-            return {
-                id,
-                baseMint: info.baseMint.toString(),
-                quoteMint: info.quoteMint.toString(),
-                lpMint: info.lpMint.toString(),
-                baseDecimals: info.baseDecimal.toNumber(),
-                quoteDecimals: info.quoteDecimal.toNumber(),
-                lpDecimals: lpMintInfo.decimals,
-                version: 4,
-                programId: account.owner.toString(),
-                authority: Liquidity.getAssociatedAuthority({ programId: account.owner }).publicKey.toString(),
-                openOrders: info.openOrders.toString(),
-                targetOrders: info.targetOrders.toString(),
-                baseVault: info.baseVault.toString(),
-                quoteVault: info.quoteVault.toString(),
-                withdrawQueue: info.withdrawQueue.toString(),
-                lpVault: info.lpVault.toString(),
-                marketVersion: 3,
-                marketProgramId: info.marketProgramId.toString(),
-                marketId: info.marketId.toString(),
-                marketAuthority: Market.getAssociatedAuthority({ programId: info.marketProgramId, marketId: info.marketId }).publicKey.toString(),
-                marketBaseVault: marketInfo.baseVault.toString(),
-                marketQuoteVault: marketInfo.quoteVault.toString(),
-                marketBids: marketInfo.bids.toString(),
-                marketAsks: marketInfo.asks.toString(),
-                marketEventQueue: marketInfo.eventQueue.toString(),
-                lookupTableAccount: web3.PublicKey.default.toString()
-            }
-        },
-        getWalletTokenAccount: async function(connection, wallet) {
-            const walletTokenAccount = await connection.getTokenAccountsByOwner(wallet, {
-                programId: TOKEN_PROGRAM_ID,
-            });
-            
-            return walletTokenAccount.value.map((i) => ({
-                pubkey: i.pubkey,
-                programId: i.account.owner,
-                accountInfo: SPL_ACCOUNT_LAYOUT.decode(i.account.data),
-            }));
         }
     }
 };

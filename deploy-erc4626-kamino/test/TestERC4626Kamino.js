@@ -16,20 +16,21 @@ const {
 } = require("@solana/spl-token");
 const BN = require('bn.js');
 const { config } = require('./config');
+const RECEIPTS_COUNT = 50;
 
 describe('TestERC4626Kamino tests:', async function () {
     const connection = new web3.Connection(config.SOLANA_NODE, "processed");
-    const ERC4626KaminoAddress = '0x5Cd79e38a25bD0bdCaBA81b8e9a22db745a2700E';
+    const ERC4626KaminoAddress = '0xaD162799C30c7D915b047013Ad2C3A84DEB20c72';
     let operator, user;
     let ERC4626Kamino;
     let contractPublicKey;
     let USDC;
-    const depositAmount = 1000;
-    const withdrawAmount = 10; // percentage
-    const bufferAmount = 15; // percentage
+    const depositAmount = 10000;
+    const withdrawAmount = 100; // percentage
+    const bufferAmount = 20; // percentage
     if (!ethers.isAddress(ERC4626KaminoAddress)) {
         console.log('Invalid ERC4626KaminoAddress');
-        return false;
+        process.exit();
     }
 
     before(async function() {
@@ -41,77 +42,86 @@ describe('TestERC4626Kamino tests:', async function () {
         const contractPublicKeyInBytes = await ERC4626Kamino.getNeonAddress(ERC4626KaminoAddress);
         contractPublicKey = ethers.encodeBase58(contractPublicKeyInBytes);
         console.log(contractPublicKey, 'contractPublicKey');
-
         console.log(await ERC4626Kamino.asset(), 'asset()');
-        console.log(await ERC4626Kamino.getKaminoUSDCcUSDCExchangeRate(), 'getKaminoUSDCcUSDCExchangeRate');
+
+        const cUSDC_ATA = await getAssociatedTokenAddressSync(
+            new web3.PublicKey(config.DATA.SVM.ADDRESSES.KAMINO_RESERVE_USDC),
+            new web3.PublicKey(contractPublicKey), 
+            true, 
+            TOKEN_PROGRAM_ID, 
+            ASSOCIATED_TOKEN_PROGRAM_ID
+        );
+        const cUSDC_ATAInfo = await connection.getAccountInfo(cUSDC_ATA);
+    
+        const USDC_ATA = await getAssociatedTokenAddressSync(
+            new web3.PublicKey(config.DATA.SVM.ADDRESSES.USDC),
+            new web3.PublicKey(contractPublicKey), 
+            true, 
+            TOKEN_PROGRAM_ID, 
+            ASSOCIATED_TOKEN_PROGRAM_ID
+        );
+        const USDC_ATAInfo = await connection.getAccountInfo(USDC_ATA);
+    
+        // in order to proceed with swap the executor account needs to have existing Token Accounts for both tokens
+        if (!cUSDC_ATAInfo || !USDC_ATAInfo) {
+            if (!cUSDC_ATAInfo) {
+                console.log('Account ' + contractPublicKey + ' does not have initialized ATA account for TokenA ( ' + config.DATA.SVM.ADDRESSES.KAMINO_RESERVE_USDC + ' ).');
+            }
+            if (!USDC_ATAInfo) {
+                console.log('Account ' + contractPublicKey + ' does not have initialized ATA account for TokenB ( ' + config.DATA.SVM.ADDRESSES.USDC + ' ).');
+            }
+            process.exit();
+        }
     });
 
     describe('Tests:', function() {
-        /* it('Test user deposit into protocol', async function () {
+        it('Test user deposit into protocol', async function () {
             const totalAssets = await ERC4626Kamino.totalAssets();
-            console.log(totalAssets, 'totalAssets');
             const userBalance = await USDC.balanceOf(user.address);
-            console.log(userBalance, 'userBalance');
             const userSharesBalance = await ERC4626Kamino.balanceOf(user.address);
-            console.log(userSharesBalance, 'userSharesBalance');
 
-            let tx = await USDC.connect(user).approve(ERC4626KaminoAddress, depositAmount);
-            await tx.wait(3);
+            let tx;
+            tx = await USDC.connect(user).approve(ERC4626KaminoAddress, depositAmount);
+            await tx.wait(RECEIPTS_COUNT);
             console.log(tx, 'approve tx');
 
             tx = await ERC4626Kamino.connect(user).deposit(depositAmount, user.address);
-            await tx.wait(1);
+            await tx.wait(RECEIPTS_COUNT);
             console.log(tx, 'deposit tx');
 
             expect(await ERC4626Kamino.totalAssets()).to.be.greaterThan(totalAssets);
             expect(userBalance).to.be.greaterThan(await USDC.balanceOf(user.address));
             expect(await ERC4626Kamino.balanceOf(user.address)).to.be.greaterThan(userSharesBalance);
-        }); */
+        });
 
         it('Test operator deposit to Solana', async function () {
-            const totalAssets = await ERC4626Kamino.totalAssets();
-            console.log(totalAssets, 'totalAssets');
-            const userBalance = await USDC.balanceOf(user.address);
-            console.log(userBalance, 'userBalance');
+            const protocolUSDCBalance = await USDC.balanceOf(ERC4626Kamino.target);
             const userSharesBalance = await ERC4626Kamino.balanceOf(user.address);
-            console.log(userSharesBalance, 'userSharesBalance');
 
-            const userMaxWithdraw = await ERC4626Kamino.maxWithdraw(user.address);
-
-            //const depositAmountToSolana = parseInt((parseInt(await ERC4626Kamino.totalAssets()) * (100 - bufferAmount)) / 100);
-            //console.log(depositAmountToSolana, 'depositAmountToSolana');
-            const depositAmountToSolana = 10000;
+            const depositAmountToSolana = parseInt((Number(protocolUSDCBalance) * (100 - bufferAmount)) / 100);
+            console.log(depositAmountToSolana, 'depositAmountToSolana');
             
-            const { market, reserve: usdcReserve } = await config.kaminoHelper.loadReserveData({
+            /* const { market, reserve: usdcReserve } = await config.kaminoHelper.loadReserveData({
                 connection,
                 marketPubkey: new web3.PublicKey(config.DATA.SVM.ADDRESSES.KAMINO_MAIN_MARKET),
                 mintPubkey: new web3.PublicKey(config.DATA.SVM.ADDRESSES.USDC),
                 KaminoMarket: KaminoMarket,
                 DEFAULT_RECENT_SLOT_DURATION_MS: DEFAULT_RECENT_SLOT_DURATION_MS
-            });
+            }); */
+
+            const market = await config.kaminoHelper.getMarket({ connection, marketPubkey: new web3.PublicKey(config.DATA.SVM.ADDRESSES.KAMINO_MAIN_MARKET), KaminoMarket, DEFAULT_RECENT_SLOT_DURATION_MS: DEFAULT_RECENT_SLOT_DURATION_MS });
 
             const depositAction = await KaminoAction.buildDepositReserveLiquidityTxns(
                 market,
                 new BN(depositAmountToSolana),
-                usdcReserve.getLiquidityMint(),
+                new web3.PublicKey(config.DATA.SVM.ADDRESSES.USDC), //usdcReserve.getLiquidityMint(),
                 new web3.PublicKey(contractPublicKey),
                 new VanillaObligation(PROGRAM_ID),
                 0,
                 false
             );
 
-            console.log(depositAction.setupIxs, 'depositAction.setupIxs');
-            console.log(depositAction.lendingIxs, 'depositAction.lendingIxs');
-            console.log(depositAction.cleanupIxs, 'depositAction.cleanupIxs');
-
             let instructionsData = [];
-            if (depositAction.setupIxs.length) {
-                for (let i = 0, len = depositAction.setupIxs.length; i < len; ++i) {
-                    console.log(depositAction.setupIxs[i].keys, 'keys');
-                    instructionsData.push(config.utils.prepareInstruction(depositAction.setupIxs[i]));
-                }
-            }
-
             if (depositAction.lendingIxs.length) {
                 for (let i = 0, len = depositAction.lendingIxs.length; i < len; ++i) {
                     console.log(depositAction.lendingIxs[i].keys, 'keys');
@@ -119,51 +129,52 @@ describe('TestERC4626Kamino tests:', async function () {
                 }
             }
 
-            /* if (depositAction.cleanupIxs.length) {
-                for (let i = 0, len = depositAction.cleanupIxs.length; i < len; ++i) {
-                    instructionsData.push(config.utils.prepareInstruction(depositAction.cleanupIxs[i]));
-                }
-            } */
-
-            /* tx = await ERC4626Kamino.connect(operator).depositToSolana(
+            let tx = await ERC4626Kamino.connect(operator).depositToSolana(
                 depositAmountToSolana,
-                [0],
-                [instructionsData[0]]
+                instructionsData[0]
             );
-            await tx.wait(1);
-            console.log(tx, 'tx done'); */
+            await tx.wait(RECEIPTS_COUNT);
+            console.log(tx, 'tx done');
 
-            console.log(instructionsData, 'executeComposabilityRequest');
-            tx = await ERC4626Kamino.connect(operator).executeComposabilityRequest(
-                [0],
-                instructionsData
-            );
-            console.log(tx, 'tx');
-            await tx.wait(1);
-            console.log(tx, 'tx done'); 
-
-            expect(userMaxWithdraw).to.eq(await ERC4626Kamino.maxWithdraw(user.address));
-            console.log(totalAssets, 'totalAssets');
-            console.log(await ERC4626Kamino.totalAssets(), 'await ERC4626Kamino.totalAssets()');
+            expect(userSharesBalance).to.eq(await ERC4626Kamino.balanceOf(user.address));
+            expect(protocolUSDCBalance).to.be.greaterThan(await USDC.balanceOf(ERC4626Kamino.target));
         });
 
-        /* it('Test operator withdraw from Solana', async function () {
-            console.log(await connection.getAccountInfo(ReceiverAccount), 'getAccountInfo SenderAccount');
-            const userMaxWithdraw = await ERC4626Kamino.maxWithdraw(user.address);
-            const totalAssets = await ERC4626Kamino.totalAssets();
+        it('Test operator withdraw from Solana', async function () {
+            const protocolUSDCBalance = await USDC.balanceOf(ERC4626Kamino.target);
+            const userSharesBalance = await ERC4626Kamino.balanceOf(user.address);
 
-            const countract_cUSD_AYA = getAssociatedTokenAddressSync(
+            const countract_USD_ATA = getAssociatedTokenAddressSync(
+                new web3.PublicKey(config.DATA.SVM.ADDRESSES.USDC), 
+                new web3.PublicKey(contractPublicKey), 
+                true, 
+                TOKEN_PROGRAM_ID, 
+                ASSOCIATED_TOKEN_PROGRAM_ID
+            );
+            console.log(countract_USD_ATA, 'countract_USD_ATA');
+
+            const countract_cUSD_ATA = getAssociatedTokenAddressSync(
                 new web3.PublicKey(config.DATA.SVM.ADDRESSES.KAMINO_RESERVE_USDC), 
                 new web3.PublicKey(contractPublicKey), 
                 true, 
                 TOKEN_PROGRAM_ID, 
                 ASSOCIATED_TOKEN_PROGRAM_ID
             );
-            const kUSDCTokenAmount = await connection.getTokenAccountBalance(countract_cUSD_AYA);
-            console.log(kUSDCTokenAmount, 'kUSDCTokenAmount');
+            const kUSDCTokenAmount = await connection.getTokenAccountBalance(countract_cUSD_ATA);
 
-            const withdrawAmountFromSolana = parseInt((kUSDCTokenAmount.value.amount * withdrawAmount) / 100);
+            let withdrawAmountFromSolana; 
+            if (withdrawAmount == 100) {
+                withdrawAmountFromSolana = kUSDCTokenAmount.value.amount;
+            } else {
+                withdrawAmountFromSolana = (kUSDCTokenAmount.value.amount * withdrawAmount) / 100;
+            }
             console.log(withdrawAmountFromSolana, 'withdrawAmountFromSolana');
+
+            const getKaminoUSDCcUSDCExchangeRate = await ERC4626Kamino.getKaminoUSDCcUSDCExchangeRate();
+            console.log(getKaminoUSDCcUSDCExchangeRate, 'getKaminoUSDCcUSDCExchangeRate');
+
+            const exchange = withdrawAmountFromSolana / (Number(getKaminoUSDCcUSDCExchangeRate[0]) / Number(getKaminoUSDCcUSDCExchangeRate[1]));
+            console.log(exchange, 'exchange');
             
             const { market, reserve: usdcReserve } = await config.kaminoHelper.loadReserveData({
                 connection,
@@ -172,64 +183,48 @@ describe('TestERC4626Kamino tests:', async function () {
                 KaminoMarket: KaminoMarket,
                 DEFAULT_RECENT_SLOT_DURATION_MS: DEFAULT_RECENT_SLOT_DURATION_MS
             });
+
             const withdrawAction = await KaminoAction.buildRedeemReserveCollateralTxns(
                 market,
                 new BN(withdrawAmountFromSolana),
-                usdcReserve.getLiquidityMint(),
+                new web3.PublicKey(config.DATA.SVM.ADDRESSES.USDC), //usdcReserve.getLiquidityMint(),
                 new web3.PublicKey(contractPublicKey),
                 new VanillaObligation(PROGRAM_ID),
-                1_000_000,
-                true
+                0,
+                false
             );
 
-            console.log(withdrawAction.setupIxs, 'withdrawAction.setupIxs');
-            console.log(withdrawAction.lendingIxs, 'withdrawAction.lendingIxs');
-            console.log(withdrawAction.cleanupIxs, 'withdrawAction.cleanupIxs');
-
             let instructionsData = [];
-            if (withdrawAction.setupIxs.length) {
-                for (let i = 0, len = withdrawAction.setupIxs.length; i < len; ++i) {
-                    instructionsData.push(config.utils.prepareInstruction(withdrawAction.setupIxs[i]));
-                }
-            }
-
             if (withdrawAction.lendingIxs.length) {
                 for (let i = 0, len = withdrawAction.lendingIxs.length; i < len; ++i) {
                     instructionsData.push(config.utils.prepareInstruction(withdrawAction.lendingIxs[i]));
                 }
             }
 
-            if (withdrawAction.cleanupIxs.length) {
-                for (let i = 0, len = withdrawAction.cleanupIxs.length; i < len; ++i) {
-                    instructionsData.push(config.utils.prepareInstruction(withdrawAction.cleanupIxs[i]));
-                }
-            }
-
-            // add following instruction to instructionsData - transfer from contract's USDC ATA to contract's USDC arbitrary account
+            // transfer from contract's USDC ATA to contract's USDC arbitrary account
             instructionsData.push(
-                createTransferInstruction(
-                    countract_cUSD_AYA,
-                    config.utils.calculateTokenAccount(
-                        config.DATA.EVM.ADDRESSES.USDC,
-                        ERC4626Kamino.address,
-                        new web3.PublicKey(config.DATA.SVM.ADDRESSES.NEON_PROGRAM)
-                    ),
-                    new web3.PublicKey(contractPublicKey),
-                    123, // FIX AMOUNT
-                    []
+                config.utils.prepareInstruction(
+                    createTransferInstruction(
+                        countract_USD_ATA,
+                        config.utils.calculateTokenAccount(
+                            config.DATA.EVM.ADDRESSES.USDC,
+                            ERC4626Kamino.target,
+                            new web3.PublicKey(config.DATA.SVM.ADDRESSES.NEON_PROGRAM)
+                        )[0],
+                        new web3.PublicKey(contractPublicKey),
+                        parseInt((exchange * 99) / 100) // fix rounding issues
+                    )
                 )
             );
 
-            tx = await ERC4626Kamino.connect(operator).withdrawFromSolana(
-                depositAmountToSolana,
+            let tx = await ERC4626Kamino.connect(operator).withdrawFromSolana(
                 instructionsData
             );
-            await tx.wait(1);
+            await tx.wait(RECEIPTS_COUNT);
             console.log(tx, 'tx done');
 
-            expect(userMaxWithdraw).to.eq(await ERC4626Kamino.maxWithdraw(user.address));
-            console.log(totalAssets, 'totalAssets');
-            console.log(await ERC4626Kamino.totalAssets(), 'await ERC4626Kamino.totalAssets()');
+            expect(userSharesBalance).to.eq(await ERC4626Kamino.balanceOf(user.address));
+            expect(await USDC.balanceOf(ERC4626Kamino.target)).to.be.greaterThan(protocolUSDCBalance);
         });
 
         it('Test user withdraw from protocol', async function () {
@@ -238,14 +233,12 @@ describe('TestERC4626Kamino tests:', async function () {
             const userSharesBalance = await ERC4626Kamino.balanceOf(user.address);
 
             tx = await ERC4626Kamino.connect(user).redeem(userSharesBalance, user.address, user.address);
-            await tx.wait(1);
+            await tx.wait(RECEIPTS_COUNT);
             console.log(tx, 'redeem tx');
 
             expect(totalAssets).to.be.greaterThan(await ERC4626Kamino.totalAssets());
             expect(await USDC.balanceOf(user.address)).to.be.greaterThan(userBalance);
             expect(userSharesBalance).to.be.greaterThan(await ERC4626Kamino.balanceOf(user.address));
-        }); */
+        });
     });
 });
-
-// TxHash,BlockNumber,UnixTimestamp,FromAddress,ToAddress,ContractAddress,Type,Value,Fee,Status,ErrCode,CurrentPrice,TxDateOpeningPrice,TxDateClosingPrice,MethodName

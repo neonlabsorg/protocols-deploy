@@ -1,29 +1,15 @@
-# 1inch Limit Order protocol on Neon EVM
+# ERC4626 with Kamino on Neon EVM
 
-The following repo represents an instance of the 1inch's Limit Order protocol deployed on Neon EVM. The protocol is deployed & verified at [https://neon.blockscout.com/address/0xF40dd8107EEc3397Ab227cA67a536436e0bd80C8](https://neon.blockscout.com/address/0xF40dd8107EEc3397Ab227cA67a536436e0bd80C8).
+The following repo represents a showcase of how an EVM Solidity smart contract can initiate read and write requests to Solana's state. The `ERC4626Kamino.sol` smart contract leverages the ERC4626 standard in order to handle the depositing and withdraws of assets and the minting and burning of shares. The example includes 2 main actors - users _( being able to deposit & withdraw assets )_ and operator _( the smart contract's owner which has the permission to manage the protocol's assets )_. The smart contract does not have a reward logic on the Solidity level, but instead the operator should once in a while perform risk management and move the protocol's assets to profitable protocols on Solana. For example in the tests the operator forwards the majority of the protocol's assets into a lending protocol on Solana _( [Kamino](https://app.kamino.finance/) )_. There is a buffer amount always available in the protocol to handle immediate user withdraws. The risk management part for the operator includes tracking of the protocol's asset balance via script and making sure that the protocols always maintains the buffer amount to handle user withdraws. The smart contract is deployed and verified at [https://neon.blockscout.com/address/0xaD162799C30c7D915b047013Ad2C3A84DEB20c72](https://neon.blockscout.com/address/0xaD162799C30c7D915b047013Ad2C3A84DEB20c72).
 
-### Deploy
-```npx hardhat run scripts/deploy.js --network neonmainnet```
+### Examples
+* [https://neon.blockscout.com/tx/0xfdf8c306615e8a86b27e9eebd32eeeb2261cf690a0fe7585ecf7ae8d61a0dec7](https://neon.blockscout.com/tx/0xfdf8c306615e8a86b27e9eebd32eeeb2261cf690a0fe7585ecf7ae8d61a0dec7) - The user deposits USDC into the protocol and is being minted shares of the vault
+* [https://neon.blockscout.com/tx/0x6d724c4b886d558281d28266c535bb925e005aa52f52d452d34ed3265a6085b3](https://neon.blockscout.com/tx/0x6d724c4b886d558281d28266c535bb925e005aa52f52d452d34ed3265a6085b3) - The operator deposits the protocol's balance to Kamino ( minus the buffer amount that always should be presenting in the protocol )
+* [https://neon.blockscout.com/tx/0x5cc9883eb7ee9b4ef0ecc40b2d525a65f0ab8cfaf07596265b1cb2337b3ae8f4](https://neon.blockscout.com/tx/0x5cc9883eb7ee9b4ef0ecc40b2d525a65f0ab8cfaf07596265b1cb2337b3ae8f4) - The operator withdrawing the full deposit from Kamino
+* [https://neon.blockscout.com/tx/0x9eb0d814e4fd78294978dbf3aa63115fbdebc82ea4bd82a0cf20d3a731e7c34a](https://neon.blockscout.com/tx/0x9eb0d814e4fd78294978dbf3aa63115fbdebc82ea4bd82a0cf20d3a731e7c34a) - The user burning his vault shares and receiving back his initial deposit plus potential profits
 
 ### Testing
-```npx hardhat test test/TestLimitOrderProtocol.js --network neonmainnet```
+```npx hardhat test test/TestERC4626Kamino.js --network neonmainnet```
 
-Returns the following output:
-
-```
-1inch limit order protocol tests:
-0x3752eb1d3c205ed9c3f108e7e1bb6dde0292ad5d020a23d51309c5825544d805 cancelOrder tx
-      ✔ Test cancel order
-0x3ade576a517d5c9c91af11db45fb7be46b6814bb7683f2f73dfc110192c49355 maker approval tx
-0xe4dc6372fcbff4bf4374df48099c5f2377c4930bcf0efb2e529c7db2de313738 taker approval tx
-0x1fe99cfafc211810141195836ecd71df0b21fca3be64d12d7a8bfdec5389b13f fillOrder tx
-      ✔ Test filling order from an EOA ( USDC => WNEON order )
-0x970c016add0e7affd8aa1f6b98ece1aadb55bf033b5a45b112bf3b52b9616586 maker approval tx
-0x7f8bbb69aefc12b8289fa8018db571ccbae52fa83d3336d79a773d83a2431625 taker approval tx
-0x118d1b1aad690ba885dd4b3fa1e26574401c4abfee7b64cfda46dd9c5e289e03 fillOrder tx
-      ✔ Test filling order from an EOA ( USDC => WSOL order )
-0xb045b9417300f7154daff20ef20b329d60f6cb9984872a06992f5b3a95fbaef1 maker approval tx
-0x5128978acf2e67ea7159c14d9d82a40025e406aa712f3d23447a7bece3e75a3f taker load tx
-0x019b7fc4ac70c17edfcda13f9f1a7237ec8d2a958491fd83fe233a262ae6e1f6 fillOrder tx
-      ✔ Test filling order from a smart contract ( USDC => WNEON order )
-```
+### Note
+The following code is for demonstration purposes only and should not be used directly for mainnet deployments. When using the example, you should generally explore the code and modify and test it according to the business logic of your smart contract.

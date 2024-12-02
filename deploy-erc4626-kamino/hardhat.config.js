@@ -48,7 +48,7 @@ module.exports = {
       chainId: 245022934,
       allowUnlimitedContractSize: false,
       gas: "auto",
-      gasPrice: 10000000000000
+      gasPrice: "auto"
     },
   },
   mocha: {

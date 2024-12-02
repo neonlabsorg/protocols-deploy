@@ -3,13 +3,13 @@
 pragma solidity 0.8.28;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
-import "./interfaces/IERC20ForSPL.sol";
-import "./precompiles/ICallSolana.sol";
-import "./precompiles/QueryAccount.sol";
-import "./utils/CallSolanaHelperLib.sol";
-import "./utils/SolanaDataConverterLib.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ERC4626, ERC20} from "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
+import {IERC20ForSPL} from "./interfaces/IERC20ForSPL.sol";
+import {ICallSolana} from "./precompiles/ICallSolana.sol";
+import {QueryAccount} from "./precompiles/QueryAccount.sol";
+import {CallSolanaHelperLib} from "./utils/CallSolanaHelperLib.sol";
+import {SolanaDataConverterLib} from "./utils/SolanaDataConverterLib.sol";
 
 
 /// @title ERC4626Kamino
@@ -47,7 +47,6 @@ contract ERC4626Kamino is Ownable, ERC4626 {
 
     function totalAssets() public view virtual override returns (uint256) {
         uint _totalAssets = IERC20(asset()).balanceOf(address(this));
-        uint scale = 10 ** 10;
 
         // get contract's cUSDC ATA balance
         bytes32 cUSDC_ATA = CALL_SOLANA.getSolanaPDA(
@@ -64,6 +63,7 @@ contract ERC4626Kamino is Ownable, ERC4626 {
         
         uint64 cUSDCBalance = (data.toUint64(ATA_AMOUNT_OFFSET)).readLittleEndianUnsigned64();
         if (cUSDCBalance > 0) {
+            uint scale = 10 ** 10;
             (uint mintTotalSupply, uint totalSupply) = getKaminoUSDCcUSDCExchangeRate();
 
             _totalAssets+= (cUSDCBalance * scale) / ((mintTotalSupply * scale) / totalSupply);
@@ -71,77 +71,9 @@ contract ERC4626Kamino is Ownable, ERC4626 {
         return _totalAssets;
     }
 
-    /* function _convertToShares(uint256 assets, Math.Rounding rounding) internal view virtual override returns (uint256) {
-        uint totalAssets = totalAssets() + 1;
-        uint scale = 10 ** 10;
-
-        // get contract's cUSDC ATA balance
-        bytes32 cUSDC_ATA = CALL_SOLANA.getSolanaPDA(
-            ASSOCIATED_TOKEN_PROGRAM,
-            CallSolanaHelperLib.getAssociateTokenAccountSeeds(
-                CALL_SOLANA.getNeonAddress(address(this)),
-                TOKEN_PROGRAM,
-                KAMINO_cUSDC
-            )
-        );
-
-        (bool success, bytes memory data) = QueryAccount.data(uint256(cUSDC_ATA), 0, 165);
-        require(success, FailedQueryAccountRequest(cUSDC_ATA));
-        
-        uint64 cUSDCBalance = (data.toUint64(ATA_AMOUNT_OFFSET)).readLittleEndianUnsigned64();
-        if (cUSDCBalance > 0) {
-            (uint mintTotalSupply, uint totalSupply) = getKaminoUSDCcUSDCExchangeRate();
-
-            totalAssets+= (cUSDCBalance * scale) / ((mintTotalSupply * scale) / totalSupply);
-        }
-
-        return assets.mulDiv(
-            totalSupply() + 10 ** _decimalsOffset(), 
-            totalAssets,
-            rounding
-        );
-    }
-
-    function _convertToAssets(uint256 shares, Math.Rounding rounding) internal view virtual override returns (uint256) {
-        uint totalAssets = totalAssets() + 1;
-        uint scale = 10 ** 10;
-
-        // get contract's cUSDC ATA balance
-        bytes32 cUSDC_ATA = CALL_SOLANA.getSolanaPDA(
-            ASSOCIATED_TOKEN_PROGRAM,
-            CallSolanaHelperLib.getAssociateTokenAccountSeeds(
-                CALL_SOLANA.getNeonAddress(address(this)),
-                TOKEN_PROGRAM,
-                KAMINO_cUSDC
-            )
-        );
-
-        (bool success, bytes memory data) = QueryAccount.data(uint256(cUSDC_ATA), 0, 165);
-        require(success, FailedQueryAccountRequest(cUSDC_ATA));
-        
-        uint64 cUSDCBalance = (data.toUint64(ATA_AMOUNT_OFFSET)).readLittleEndianUnsigned64();
-        if (cUSDCBalance > 0) {
-            (uint mintTotalSupply, uint totalSupply) = getKaminoUSDCcUSDCExchangeRate();
-
-            totalAssets+= (cUSDCBalance * scale) / ((mintTotalSupply * scale) / totalSupply);
-        }
-
-        return shares.mulDiv(
-            totalAssets,
-            totalSupply() + 10 ** _decimalsOffset(), 
-            rounding
-        );
-    } */
-
-    function testExchangeRate(uint cUSDCBalance) view public returns(uint) {
-        uint scale = 10 ** 10;
-        (uint mintTotalSupply, uint totalSupply) = getKaminoUSDCcUSDCExchangeRate();
-        return (cUSDCBalance * scale) / ((mintTotalSupply * scale) / totalSupply);
-    }
-
     // calculate Kamino's cUSDC <=> USDC exchange rate
     function getKaminoUSDCcUSDCExchangeRate() public view returns(uint, uint) {
-        (bool success, bytes memory data) = QueryAccount.data(uint256(KAMINO_RESERVE_USDC), 0, 8624);
+        (bool success, bytes memory data) = QueryAccount.data(uint256(KAMINO_RESERVE_USDC), 0, 2600); // 8624 is the full size
         require(success, FailedQueryAccountRequest(KAMINO_RESERVE_USDC));
 
         uint64 mintTotalSupply = (data.toUint64(MINT_TOTAL_SUPPLY_OFFSET)).readLittleEndianUnsigned64();
@@ -169,16 +101,10 @@ contract ERC4626Kamino is Ownable, ERC4626 {
         );
     }
 
-    // remove lamports ???
     function depositToSolana(
         uint64 amount,
-        uint64[] calldata lamports,
-        bytes[] calldata instructionsData
+        bytes calldata instructionData
     ) external onlyOwner {
-        for (uint i = 0; i < instructionsData.length; ++i) {
-            _executeComposabilityRequest(lamports[i], instructionsData[i]);
-        }
-
         // transfer the tokens from the contract's arbitrary Token account to contract's ATA account
         IERC20ForSPL(asset()).transferSolana(
             CALL_SOLANA.getSolanaPDA(
@@ -191,15 +117,8 @@ contract ERC4626Kamino is Ownable, ERC4626 {
             ),
             amount
         );
-    }
 
-    function executeComposabilityRequest(
-        uint64[] calldata lamports,
-        bytes[] calldata instructionsData
-    ) external onlyOwner {
-        for (uint i = 0; i < instructionsData.length; ++i) {
-            _executeComposabilityRequest(lamports[i], instructionsData[i]);
-        }
+        _executeComposabilityRequest(0, instructionData);
     }
 
     function withdrawFromSolana(
