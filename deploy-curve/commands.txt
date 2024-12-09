@@ -1,4 +1,4 @@
-curl https://curve-stand.neontest.xyz/request_neon -X POST -H "Content-Type: application/json" --data '{"amount":50000,"wallet":"0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C"}'
+curl https://curve-stand.neontest.xyz/request_neon -X POST -H "Content-Type: application/json" --data '{"amount":50000,"wallet":"0x11649B5F42296Af211FD4da69c74d95f677b3a2b"}'
 curl https://curve-stand.neontest.xyz/ -X POST -H "Content-Type: application/json" --data '{"method":"eth_getBalance","params":["0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C", "latest"],"id":1,"jsonrpc":"2.0"}'
 curl https://curve-stand.neontest.xyz/ -X POST -H "Content-Type: application/json" --data '{"method":"eth_getTransactionCount","params":["0xAB1c34b53F12980a4fa9043B70c864CEE6891c0C", "latest"],"id":1,"jsonrpc":"2.0"}'
 curl https://curve-stand.neontest.xyz/ -X POST -H "Content-Type: application/json" --data '{"method":"eth_chainId","params":[],"id":1,"jsonrpc":"2.0"}'
