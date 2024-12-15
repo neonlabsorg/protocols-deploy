@@ -15,12 +15,11 @@ if (process.env.ANCHOR_WALLET == undefined) {
 const keypair = web3.Keypair.fromSecretKey(Uint8Array.from(new Uint8Array(JSON.parse(fs.readFileSync(process.env.ANCHOR_WALLET).toString()))));
 console.log(keypair.publicKey.toBase58(), 'payer');
 
-const publicKey = new web3.PublicKey('8HzCjhBNP3rs7SydUrZAiQGEoqXHNtpNPE475zzHmzba'); // set your public key here
+const publicKey = new web3.PublicKey('DpZtnT6doULeEbd86cLYqzf34d3YFrkux38tR4dcQn5W'); // set your public key here
 
 // set your token mint keys here
 const tokenMintsArray = [
-    '5gNTwcer8D5N8RVD6kHXgfoM9JErRDE9WyDEGcHk2u8A',
-    '9jgF9jg95TzbJwCePmLeS6XcbqFDy4tL6uV9fC7JNVVw'
+    'FzwVSzvWDsZev7dnbxojx4CzXrxWqFhTp2zSxB44dt6B'
 ];
 let atasToBeCreated = '';
 

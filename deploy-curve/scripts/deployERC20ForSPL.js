@@ -20,10 +20,6 @@ async function main() {
     console.log(
         `ERC20ForSplMintableA token deployed to ${ERC20ForSplMintableA.target}`
     );
-    console.log(await ERC20ForSplMintableA.tokenMint(), 'tokenMint');
-    console.log(await ERC20ForSplMintableA.findMintAccount(), 'findMintAccount');
-
-    return;
     
     const ERC20ForSplMintableB = await ethers.deployContract('ERC20ForSplMintable', [
         'TokenB',

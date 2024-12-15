@@ -63,8 +63,8 @@ describe('TestContract tests:', async function () {
     });
 
     describe('Tests:', function() {
-        it('Mint tokens to mock contracts', async function () {
-            /* console.log(await TokenA.balanceOf(TestContract.target), 'await TokenA.balance(TestContract.target)');
+        /* it('Mint tokens to mock contracts', async function () {
+            console.log(await TokenA.balanceOf(TestContract.target), 'await TokenA.balance(TestContract.target)');
             console.log(await TokenB.balanceOf(MockCurve.target), 'await TokenB.balance(MockCurve.target)');
 
             let tx = await TokenA.connect(owner).mint(TestContract.target, 10 * 10 ** 6);
@@ -76,8 +76,8 @@ describe('TestContract tests:', async function () {
             console.log(tx, 'TokenB mint');
 
             console.log(await TokenA.balanceOf(TestContract.target), 'await TokenA.balance(TestContract.target)');
-            console.log(await TokenB.balanceOf(MockCurve.target), 'await TokenB.balance(MockCurve.target)'); */
-        });
+            console.log(await TokenB.balanceOf(MockCurve.target), 'await TokenB.balance(MockCurve.target)');
+        }); */
 
         it('Test SVM signing', async function () {
             console.log(await TokenA.balanceOf(TestContract.target), 'await TokenA.balance(TestContract.target)');
@@ -103,7 +103,46 @@ describe('TestContract tests:', async function () {
             const nonce = (await eth_getTransactionCountRequest.json()).result;
             console.log(nonce, 'nonce');
 
-            const txBody = {
+            let test =  {
+                type: 0x7F,
+                neonSubType: 0x01,
+                data: {
+                    payer: payer,
+                    sender: '0x',
+                    nonce: ethers.toBeHex(parseInt(nonce, 16)),
+                    index: '0x',
+                    intent: '0x',
+                    intentCallData: '0x',
+                    target: '0x34D7402193fafC1d179596e85f5dED74f6BbB173',
+                    callData: '0x095ea7b3000000000000000000000000ab1c34b53f12980a4fa9043b70c864cee6891c0c00000000000000000000000000000000000000000000000000000000075bcd15',
+                    value: '0x',
+                    chainId: '0x70',
+                    gasLimit: '0x02540be3ff',
+                    maxFeePerGas: '0x77359400',
+                    maxPriorityFeePerGas: '0x0a'
+                },
+                defaultData: {
+                    value: '0x',
+                    chainId: '0x70',
+                    gasLimit: '0x02540be3ff',
+                    maxFeePerGas: '0x64',
+                    maxPriorityFeePerGas: '0x0a'
+                }
+            }
+
+            const result = [];
+            for (const property in test.data) {
+                result.push(test.data[property]);
+            }
+            console.log(ethers.encodeRlp(result), 'ethers.encodeRlp(result)');
+
+            let neonTransaction = Buffer.concat([
+                config.utils.SolanaNativeHelpers.numberToBuffer([test.type]), 
+                config.utils.SolanaNativeHelpers.numberToBuffer([test.neonSubType]), 
+                config.utils.SolanaNativeHelpers.hexToBuffer(ethers.encodeRlp(result))
+            ]).toString('hex');
+
+            /* const txBody = {
                 payer: payer,
                 sender: '0x',
                 nonce: ethers.toBeHex(parseInt(nonce, 16)),
@@ -113,8 +152,8 @@ describe('TestContract tests:', async function () {
                 target: TestContract.target,
                 callData: TestContract.interface.encodeFunctionData("exchange", [1 * 10 ** 6, "0x27f33b589095467766a5c83ed503e93b8ed8e3689024bd27b5356fef0adee27d"]),
                 value: '0x',
-                chainID: chainId,
-                gasLimit: ethers.toBeHex(3000000),
+                chainId: chainId,
+                gasLimit: ethers.toBeHex(9999999999),
                 maxFeePerGas: ethers.toBeHex(3000000000),
                 maxPriorityFeePerGas: ethers.toBeHex(15)
             };
@@ -130,14 +169,14 @@ describe('TestContract tests:', async function () {
                 config.utils.SolanaNativeHelpers.numberToBuffer([type]), 
                 config.utils.SolanaNativeHelpers.numberToBuffer([neonSubType]), 
                 config.utils.SolanaNativeHelpers.hexToBuffer(ethers.encodeRlp(result))
-            ]).toString('hex');
+            ]).toString('hex'); */
 
             const [balanceAddress] = config.utils.SolanaNativeHelpers.neonBalanceProgramAddressSync(payer, neonEvmProgram, parseInt(chainId, 16));
-            const [treeAccountAddress] = config.utils.SolanaNativeHelpers.neonTreeAccountAddressSync(payer, neonEvmProgram, nonce);
+            const [treeAccountAddress] = config.utils.SolanaNativeHelpers.neonTreeAccountAddressSync(payer, neonEvmProgram, nonce, parseInt(chainId, 16));
             const [authorityPoolAddress] = config.utils.SolanaNativeHelpers.neonAuthorityPoolAddressSync(neonEvmProgram);
             const associatedTokenAddress = await getAssociatedTokenAddress(new web3.PublicKey('So11111111111111111111111111111111111111112'), authorityPoolAddress, true);
+            
             const index = Math.floor(Math.random() * neon_getEvmParams.result.neonTreasuryPoolCount) % neon_getEvmParams.result.neonTreasuryPoolCount;
-
             const treasuryPool = {
                 index: index,
                 publicKey: config.utils.SolanaNativeHelpers.treasuryPoolAddressSync(neonEvmProgram, index)[0]
@@ -145,7 +184,6 @@ describe('TestContract tests:', async function () {
 
             let instruction = await config.utils.SolanaNativeHelpers.createScheduledTransactionInstruction(
                 process.env.SVM_NODE,
-                connection,
                 {
                     neonEvmProgram,
                     signerAddress,
