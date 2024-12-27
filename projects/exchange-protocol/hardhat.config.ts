@@ -19,12 +19,58 @@ const bscMainnet: NetworkUserConfig = {
   accounts: [process.env.KEY_MAINNET!],
 };
 
-const config: HardhatUserConfig = {
+// const config: HardhatUserConfig = {
+const config = {
   defaultNetwork: "hardhat",
   networks: {
-    hardhat: {},
-    // testnet: bscTestnet,
-    // mainnet: bscMainnet,
+    neonDevnet: {
+      url: "https://devnet.neonevm.org",
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY, process.env.USER1_KEY, process.env.USER2_KEY, process.env.USER3_KEY],
+      chainId: 245022926,
+      allowUnlimitedContractSize: false,
+      gas: "auto",
+      gasPrice: "auto",
+    },
+    neonMainnet: {
+      url: "https://neon-proxy-mainnet.solana.p2p.org",
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY, process.env.USER1_KEY, process.env.USER2_KEY, process.env.USER3_KEY],
+      chainId: 245022934,
+      allowUnlimitedContractSize: false,
+      gas: "auto",
+      gasPrice: "auto",
+    },
+    curvestand: {
+      url: process.env.CURVESTAND,
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY, process.env.USER1_KEY, process.env.USER2_KEY, process.env.USER3_KEY],
+      allowUnlimitedContractSize: false,
+      gas: "auto",
+      gasPrice: "auto",
+    },
+  },
+  bscTestnet,
+  bscMainnet,
+  etherscan: {
+    apiKey: {
+      neonevm: "test",
+    },
+    customChains: [
+      {
+        network: "neonevm-devnet",
+        chainId: 245022926,
+        urls: {
+          apiURL: "https://devnet-api.neonscan.org/hardhat/verify",
+          browserURL: "https://devnet.neonscan.org",
+        },
+      },
+      {
+        network: "neonevm",
+        chainId: 245022934,
+        urls: {
+          apiURL: "https://api.neonscan.org/hardhat/verify",
+          browserURL: "https://neonscan.org",
+        },
+      },
+    ],
   },
   solidity: {
     compilers: [
