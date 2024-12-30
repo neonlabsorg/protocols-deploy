@@ -23,6 +23,7 @@ import {
   hexToBigInt,
 } from 'viem'
 import { useSendTransaction } from 'wagmi'
+import * as solanaWeb3 from '@solana/web3.js'
 
 import { usePaymaster } from 'hooks/usePaymaster'
 import { ClassicOrder } from '@pancakeswap/price-api-sdk'
@@ -156,6 +157,26 @@ export default function useSendSwapTransaction(
         if (isPaymasterAvailable && isPaymasterTokenActive) {
           sendTxResult = sendPaymasterTransaction(call, account)
         } else {
+          // Establish connection to Solana provider
+          const solanaProvider = await getProvider()
+          console.log(solanaProvider)
+          try {
+            // @ts-ignore
+            const res = await solanaProvider.connect()
+            console.log('Connected to Phantom provider. Solana public key:', res.publicKey.toString())
+          } catch (err) {
+            console.error(
+              'Could not connect to Phantom provider. Please make sure Phantom browser extension is installed and unlocked.',
+            )
+          }
+
+          const solanaConnection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('devnet'))
+          console.log('Solana RPC endpoint:', solanaConnection.rpcEndpoint)
+
+          // Schedule NeonEVM transaction on Solana
+
+          // sendTxResult = new Promise((resolve) => {})
+
           sendTxResult = sendTransactionAsync({
             account,
             chainId,
@@ -291,4 +312,17 @@ export const userRejectedError = (error: unknown): boolean => {
     error instanceof TransactionRejectedError ||
     (typeof error !== 'string' && isUserRejected(error))
   )
+}
+
+const getProvider = async () => {
+  if ('solana' in window) {
+    const solanaProvider = window.solana
+    // @ts-ignore
+    if (solanaProvider.isPhantom) {
+      return solanaProvider
+    }
+  } else {
+    window.open('https://www.phantom.app/', '_blank')
+  }
+  return null
 }
