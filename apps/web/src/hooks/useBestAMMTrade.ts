@@ -193,10 +193,12 @@ export function useBestAMMTrade({ type = 'quoter', ...params }: useBestAMMTradeO
     enabled: offchainQuoterEnabled,
     autoRevalidate: quoterAutoRevalidate,
   })
+
   const bestVerifiedTradeFromOffchainQuoter = useTradeVerifiedByQuoter({
     ...bestTradeFromOffchainQuoter,
     enabled: offchainQuoterEnabled,
   })
+
   const bestOffchainWithQuickOnChainQuote = useBetterQuote(
     bestVerifiedTradeFromOffchainQuoter,
     bestTradeFromQuickOnChainQuote,

@@ -23,13 +23,17 @@ import {
   hexToBigInt,
 } from 'viem'
 import { useSendTransaction } from 'wagmi'
+import { utils } from 'ethers';
 import * as solanaWeb3 from '@solana/web3.js'
+import * as bs58 from 'bs58'
 
+import * as neonEVM from 'utils/neonevm-solana-sign'
 import { usePaymaster } from 'hooks/usePaymaster'
 import { ClassicOrder } from '@pancakeswap/price-api-sdk'
 import { logger } from 'utils/datadog'
 import { viemClients } from 'utils/viem'
 import { isZero } from '../utils/isZero'
+import { Transaction } from '@solana/web3.js'
 
 interface SwapCall {
   address: Address
@@ -157,25 +161,166 @@ export default function useSendSwapTransaction(
         if (isPaymasterAvailable && isPaymasterTokenActive) {
           sendTxResult = sendPaymasterTransaction(call, account)
         } else {
+
+          const solanaPrivateKey = bs58.decode(`4uk3wcD2KNf6athPWNkMvBQDXR611e8XhS8BomVnTJypYJpxJun6GyinJ9z9TRJtNfZdptYLGh6RL7GE3Xj33HGM`);
+          const keypair = solanaWeb3.Keypair.fromSecretKey(solanaPrivateKey);
+          console.log(keypair, 'keypair')
+
           // Establish connection to Solana provider
-          const solanaProvider = await getProvider()
-          console.log(solanaProvider)
+          /*
+          const solanaProvider = await getSolanaProvider()
+          console.log(solanaProvider, 'solanaProvider')
+          let solanaAccountPublicKey : solanaWeb3.PublicKey
+          */
+          let solanaConnection: solanaWeb3.Connection
           try {
-            // @ts-ignore
+            /*
+            console.log('Connecting to Phantom provider...')
+            @ts-ignore
             const res = await solanaProvider.connect()
-            console.log('Connected to Phantom provider. Solana public key:', res.publicKey.toString())
+            solanaAccountPublicKey = res.publicKey
+            console.log('Connected to Phantom provider. Solana public key:', solanaAccountPublicKey.toString())
+            */
+            solanaConnection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('devnet'))
+            console.log('Solana RPC endpoint:', solanaConnection.rpcEndpoint)
           } catch (err) {
             console.error(
               'Could not connect to Phantom provider. Please make sure Phantom browser extension is installed and unlocked.',
             )
           }
 
-          const solanaConnection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('devnet'))
-          console.log('Solana RPC endpoint:', solanaConnection.rpcEndpoint)
-
           // Schedule NeonEVM transaction on Solana
+          // @ts-ignore
+          // if(solanaAccountPublicKey &&
+          // @ts-ignore
+          if(solanaConnection) {
+            console.log('Getting Neon proxy state...')
 
-          // sendTxResult = new Promise((resolve) => {})
+            const neonProxy = await neonEVM.getProxyState(`https://devnet.neonevm.org`);
+            console.log(neonProxy, 'getProxyState result')
+
+            const neonProxyRpcApi = neonProxy.proxyApi;
+            const neonEvmProgram = neonProxy.evmProgramAddress;
+            const token = neonEVM.getGasToken(neonProxy.tokensList, neonEVM.NeonChainId.devnetSol);
+            console.log(token, 'token')
+
+            // const provider = new JsonRpcProvider(`https://devnet.neonevm.org`);
+            // const neonClientApi = new neonEVM.NeonClientApi(`<neon_client_api_url>`);
+            const tokenChainId = Number(token.gasToken.tokenChainId);
+            const chainTokenMint = new solanaWeb3.PublicKey(token.gasToken.tokenMint);
+
+            const solanaUser = neonEVM.SolanaNeonAccount.fromKeypair(keypair, neonEvmProgram, chainTokenMint, tokenChainId);
+            /*
+            const solanaUser = new neonEVM.SolanaNeonAccount(
+              solanaAccountPublicKey,
+              neonEvmProgram,
+              chainTokenMint,
+              tokenChainId
+            );
+            */
+            console.log(solanaUser, 'solanaUser')
+            console.log(solanaUser.publicKey.toString(), 'solanaUser.publicKey')
+            console.log(solanaUser.neonWallet, 'solanaUser.neonWallet')
+
+            const nonce = Number(await neonProxyRpcApi.getTransactionCount(solanaUser.neonWallet));
+            const maxFeePerGas = 0x77359400;
+
+            console.log(nonce, 'nonce')
+            console.log(maxFeePerGas, 'maxFeePerGas')
+            console.log(neonEVM.NeonChainId.devnetSol, 'neonEVM.NeonChainId.devnetSol')
+
+            // We create a Scheduled transaction embedding the contract address and the method call data. Additionally,
+            // we retrieve the nonce for the Neon wallet and include this information in the Scheduled transaction.
+
+            const approveWNEONCallData = '0x095ea7b300000000000000000000000041207f05fa41fbdcbf756bf75d3da342062760d80000000000000000000000000000000000000000204fce5e3e25026110000000';
+            const wNEONAddress = '0x11adC2d986E334137b9ad0a0F290771F31e9517F'
+            const scheduledTransaction = new neonEVM.ScheduledTransaction({
+              nonce,
+              payer: solanaUser.neonWallet, // Does this account need to be funded with NEON?
+              sender: '0x',
+              target: wNEONAddress, // call.address,
+              callData: approveWNEONCallData, // call.calldata,
+              maxFeePerGas: 1000000000, // 1 gwei
+              gasLimit: 2000000,
+              chainId: neonEVM.NeonChainId.devnetSol
+            });
+            console.log(scheduledTransaction, 'scheduledTransaction')
+
+            // We create a transaction for Solana, including all the previously defined data.
+            const solanaTransaction = await neonEVM.createScheduledNeonEvmTransaction({
+              chainId: solanaUser.chainId,
+              signerAddress: solanaUser.publicKey,
+              tokenMintAddress: solanaUser.tokenMint,
+              neonEvmProgram,
+              neonWallet: solanaUser.neonWallet,
+              neonWalletNonce: nonce,
+              neonTransaction: scheduledTransaction.serialize()
+            });
+
+            /*
+            const treasuryPool = solanaTransaction.instructions[0].keys[2].pubkey;
+            console.log(treasuryPool, 'treasuryPool')
+            const airdropResult = await neonEVM.solanaAirdrop(solanaConnection, treasuryPool, 21e9);
+            console.log(airdropResult, 'airdropResult')
+            */
+
+            // It is necessary to ensure that the balance account is initialized on Solana before the Scheduled
+            // transaction is executed. If it is not, an instruction to create the balance account must be added.
+            const balanceAccount = await solanaConnection.getAccountInfo(solanaUser.balanceAddress)
+            console.log(balanceAccount, 'balanceAccount')
+            console.log(solanaUser.balanceAddress, 'balanceAccount address')
+
+            if (balanceAccount === null) {
+              solanaTransaction.instructions.unshift(neonEVM.createBalanceAccountInstruction(
+                neonEvmProgram,
+                solanaUser.publicKey,
+                solanaUser.neonWallet,
+                solanaUser.chainId
+              ))
+            }
+
+            /*
+            const solanaTransaction =  new Transaction()
+            solanaTransaction.add(neonEVM.createBalanceAccountInstruction(
+              neonEvmProgram,
+              solanaUser.publicKey,
+              solanaUser.neonWallet,
+              solanaUser.chainId
+            ));
+            */
+
+            // Sign and send the transaction to the Solana network.
+            const { blockhash, lastValidBlockHeight } = await solanaConnection.getLatestBlockhash()
+            solanaTransaction.recentBlockhash = blockhash
+            solanaTransaction.feePayer = keypair.publicKey // solanaAccountPublicKey
+            console.log(solanaTransaction, 'solanaTransaction')
+
+            // @ts-ignore
+            // const result = await solanaProvider.signAndSendTransaction(solanaTransaction) //, solanaConnection)
+            // console.log(solanaProvider, 'solanaProvider')
+
+            // @ts-ignore
+            // const signedSolanaTransaction = await solanaProvider.signTransaction(solanaTransaction) //, solanaConnection)
+            // console.log('Solana transaction signature', signedSolanaTransaction.signature.toString('hex'))
+
+
+            solanaTransaction.sign({ publicKey: keypair.publicKey, secretKey: keypair.secretKey })
+            console.log(solanaTransaction, 'signedSolanaTransaction')
+
+            try {
+              const signature = await solanaConnection.sendRawTransaction(
+                solanaTransaction.serialize(),
+                { skipPreflight: true }
+              )
+              console.log('signature', signature.toString())
+            } catch(err: any) {
+              console.log('error', err)
+              console.error(await err.getLogs())
+            }
+
+
+            // sendTxResult = new Promise((resolve) => {})
+          }
 
           sendTxResult = sendTransactionAsync({
             account,
@@ -314,7 +459,7 @@ export const userRejectedError = (error: unknown): boolean => {
   )
 }
 
-const getProvider = async () => {
+const getSolanaProvider = async () => {
   if ('solana' in window) {
     const solanaProvider = window.solana
     // @ts-ignore
