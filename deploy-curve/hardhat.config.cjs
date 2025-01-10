@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+require ("@nomicfoundation/hardhat-ethers");
 require("@nomiclabs/hardhat-vyper");
 require("dotenv").config();
 
@@ -51,7 +52,7 @@ module.exports = {
         chainId: 245022926,
         allowUnlimitedContractSize: false,
         gas: "auto",
-        gasPrice: "auto",
+        gasPrice: 10000000000000,
     },
     neonmainnet: {
         url: "https://mainnet-proxy.neonevm.org",

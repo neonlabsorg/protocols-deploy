@@ -5,12 +5,17 @@ const fs = require("fs");
 const {
     getAssociatedTokenAddress
 } = require("@solana/spl-token");
+const bs58 = require("bs58").default
 const { config } = require("../scripts/config");
 require("dotenv").config();
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+
+/*
 if (process.env.ANCHOR_WALLET == undefined) {
     return console.error('Please create id.json in the root of the hardhat project with your Solana\'s private key and run the following command in the terminal in order to proceed with the script execution: \n\n export ANCHOR_WALLET=./id.json');
 }
+*/
 
 describe('TestContract tests:', async function () {
     const connection = new web3.Connection(process.env.SVM_NODE, "processed");
@@ -39,10 +44,30 @@ describe('TestContract tests:', async function () {
     before(async function() {
         [owner, user] = await ethers.getSigners();
 
-        TokenA = await ethers.getContractAt('contracts/interfaces/IERC20ForSPL.sol:IERC20ForSPL', config.DATA.EVM.ADDRESSES.TokenA);
-        TokenB = await ethers.getContractAt('contracts/interfaces/IERC20ForSPL.sol:IERC20ForSPL', config.DATA.EVM.ADDRESSES.TokenB);
-        MockCurve = await ethers.getContractAt('MockCurve', config.DATA.EVM.ADDRESSES.MockCurve);
-        TestContract = await ethers.getContractAt('TestContract', config.DATA.EVM.ADDRESSES.TestContract);
+        // TokenA = await ethers.getContractAt('contracts/interfaces/IERC20ForSPL.sol:IERC20ForSPL', config.DATA.EVM.ADDRESSES.TokenA);
+        // TokenB = await ethers.getContractAt('contracts/interfaces/IERC20ForSPL.sol:IERC20ForSPL', config.DATA.EVM.ADDRESSES.TokenB);
+        // MockCurve = await ethers.getContractAt('MockCurve', config.DATA.EVM.ADDRESSES.MockCurve);
+        TestContract = await ethers.getContractAt('contracts/TestContract.sol:TestContract', '0xd7E0F3CE73f901dA8b5DFd2793302b2fbc0fCcF5')// config.DATA.EVM.ADDRESSES.TestContract);
+/*
+        TestContract = await ethers.deployContract(
+            'contracts/TestContract.sol:TestContract',
+            [ZERO_ADDRESS, ZERO_ADDRESS, ZERO_ADDRESS]
+        );
+        console.log(TestContract.target)
+        console.log("waiting for deployment...")
+        const res = await TestContract.waitForDeployment()
+        console.log(res)
+        console.log("OK")
+        console.log(
+            '\nCreating instance of just now deployed TestERC20 contract on Neon EVM with address',
+            "\x1b[33m",
+            TestContract.target,
+            "\x1b[0m",
+            '\n'
+        );
+*/
+        console.log(TestContract.target, 'TestContract')
+        console.log(await TestContract.num(), 'TestContract counter');
 
         const neon_getEvmParamsRequest = await fetch(network.config.url, {
             method: 'POST',
@@ -50,16 +75,18 @@ describe('TestContract tests:', async function () {
             headers: { 'Content-Type': 'application/json' }
         });
         neon_getEvmParams = await neon_getEvmParamsRequest.json();
-
+        console.log(neon_getEvmParams, 'neon_getEvmParams')
+/*
         const eth_chainIdRequest = await fetch(process.env.EVM_SOL_NODE, {
             method: 'POST',
             body: JSON.stringify({"method":"eth_chainId","params":[],"id":1,"jsonrpc":"2.0"}),
             headers: { 'Content-Type': 'application/json' }
         });
         chainId = (await eth_chainIdRequest.json()).result;
-
-        console.log(await TokenA.tokenMint(), 'tokenMint A');
-        console.log(await TokenB.tokenMint(), 'tokenMint B');
+        console.log(chainId, 'chainId');
+*/
+        // console.log(await TokenA.tokenMint(), 'tokenMint A');
+        // console.log(await TokenB.tokenMint(), 'tokenMint B');
     });
 
     describe('Tests:', function() {
@@ -80,18 +107,25 @@ describe('TestContract tests:', async function () {
         }); */
 
         it('Test SVM signing', async function () {
-            console.log(await TokenA.balanceOf(TestContract.target), 'await TokenA.balance(TestContract.target)');
-            console.log(await TokenB.balanceOf(MockCurve.target), 'await TokenB.balance(MockCurve.target)');
+            // console.log(await TokenA.balanceOf(TestContract.target), 'await TokenA.balance(TestContract.target)');
+            // console.log(await TokenB.balanceOf(MockCurve.target), 'await TokenB.balance(MockCurve.target)');
 
-            const keypair = web3.Keypair.fromSecretKey(Uint8Array.from(new Uint8Array(JSON.parse(fs.readFileSync(process.env.ANCHOR_WALLET).toString()))));
+            let sk = bs58.decode(process.env.SOLANA_SECRET_KEY.toString())
+            const keypair = web3.Keypair.fromSecretKey(sk);
             const signerAddress = keypair.publicKey;
             console.log(signerAddress, 'signerAddress');
             const neonEvmProgram = new web3.PublicKey(neon_getEvmParams.result.neonEvmProgramId);
+            console.log(neonEvmProgram, 'neonEvmProgram')
 
             const type = 0x7F;
             const neonSubType = 0x01;
 
+            const neonDevnetChainId = 245022926 // Neon devnet chain Id
+            const solDevnetChainId = 245022927 // Solana devnet chain Id
+            console.log(parseInt(solDevnetChainId, 16), 'chainId');
+
             // transaction body
+            // const payer = new ethers.Wallet(process.env.PRIVATE_KEY_OWNER)
             const payer = ethers.dataSlice(ethers.keccak256(signerAddress.toBytes()), 12, 32);
             console.log(payer, 'payer');
 
@@ -100,8 +134,12 @@ describe('TestContract tests:', async function () {
                 body: JSON.stringify({"method":"eth_getTransactionCount","params":[payer, "latest"],"id":1,"jsonrpc":"2.0"}),
                 headers: { 'Content-Type': 'application/json' }
             });
-            const nonce = (await eth_getTransactionCountRequest.json()).result;
+
+            const nonce = '0x01'; (await eth_getTransactionCountRequest.json()).result;
             console.log(nonce, 'nonce');
+
+            const callData =  ethers.keccak256(Buffer.from('increaseNum()')).substring(0,10)
+            console.log(callData, 'callData');
 
             let test =  {
                 type: 0x7F,
@@ -109,16 +147,16 @@ describe('TestContract tests:', async function () {
                 data: {
                     payer: payer,
                     sender: '0x',
-                    nonce: ethers.toBeHex(parseInt(nonce, 16)),
+                    nonce: '0x01', // ethers.toBeHex(parseInt(nonce, 16)),
                     index: '0x',
                     intent: '0x',
                     intentCallData: '0x',
-                    target: '0x34D7402193fafC1d179596e85f5dED74f6BbB173',
-                    callData: '0x095ea7b3000000000000000000000000ab1c34b53f12980a4fa9043b70c864cee6891c0c00000000000000000000000000000000000000000000000000000000075bcd15',
+                    target: TestContract.target,
+                    callData: callData,
                     value: '0x',
-                    chainId: '0x70',
-                    gasLimit: '0x02540be3ff',
-                    maxFeePerGas: '0x77359400',
+                    chainId: ethers.toBeHex(solDevnetChainId), // ethers.toBeHex(parseInt(chainId, 16)),
+                    gasLimit: '0x0186a0',
+                    maxFeePerGas: '0x3b9aca00',
                     maxPriorityFeePerGas: '0x0a'
                 },
                 defaultData: {
@@ -129,6 +167,7 @@ describe('TestContract tests:', async function () {
                     maxPriorityFeePerGas: '0x0a'
                 }
             }
+            console.log(test, 'transaction')
 
             const result = [];
             for (const property in test.data) {
@@ -142,37 +181,9 @@ describe('TestContract tests:', async function () {
                 config.utils.SolanaNativeHelpers.hexToBuffer(ethers.encodeRlp(result))
             ]).toString('hex');
 
-            /* const txBody = {
-                payer: payer,
-                sender: '0x',
-                nonce: ethers.toBeHex(parseInt(nonce, 16)),
-                index: '0x',
-                intent: '0x',
-                intentCallData: '0x',
-                target: TestContract.target,
-                callData: TestContract.interface.encodeFunctionData("exchange", [1 * 10 ** 6, "0x27f33b589095467766a5c83ed503e93b8ed8e3689024bd27b5356fef0adee27d"]),
-                value: '0x',
-                chainId: chainId,
-                gasLimit: ethers.toBeHex(9999999999),
-                maxFeePerGas: ethers.toBeHex(3000000000),
-                maxPriorityFeePerGas: ethers.toBeHex(15)
-            };
-            console.log(txBody, 'txBody');
 
-            const result = [];
-            for (const property in txBody) {
-                result.push(txBody[property]);
-            }
-            console.log(ethers.encodeRlp(result), 'ethers.encodeRlp(result)');
-
-            let neonTransaction = Buffer.concat([
-                config.utils.SolanaNativeHelpers.numberToBuffer([type]), 
-                config.utils.SolanaNativeHelpers.numberToBuffer([neonSubType]), 
-                config.utils.SolanaNativeHelpers.hexToBuffer(ethers.encodeRlp(result))
-            ]).toString('hex'); */
-
-            const [balanceAddress] = config.utils.SolanaNativeHelpers.neonBalanceProgramAddressSync(payer, neonEvmProgram, parseInt(chainId, 16));
-            const [treeAccountAddress] = config.utils.SolanaNativeHelpers.neonTreeAccountAddressSync(payer, neonEvmProgram, nonce, parseInt(chainId, 16));
+            const [balanceAddress] = config.utils.SolanaNativeHelpers.neonBalanceProgramAddressSync(payer, neonEvmProgram, solDevnetChainId);
+            const [treeAccountAddress] = config.utils.SolanaNativeHelpers.neonTreeAccountAddressSync(payer, neonEvmProgram, nonce, solDevnetChainId);
             const [authorityPoolAddress] = config.utils.SolanaNativeHelpers.neonAuthorityPoolAddressSync(neonEvmProgram);
             const associatedTokenAddress = await getAssociatedTokenAddress(new web3.PublicKey('So11111111111111111111111111111111111111112'), authorityPoolAddress, true);
             
@@ -222,6 +233,9 @@ describe('TestContract tests:', async function () {
 
                 console.log(`\nTransaction${name ? ` ${name}` : ''} signature: ${signature}`);
                 console.log(`\nhttps://explorer.solana.com/tx/${signature}?cluster=custom&customUrl=${process.env.SVM_NODE}`);
+
+                console.log(TestContract.target, 'TestContract')
+                console.log(await TestContract.num(), 'TestContract counter');
             }
         });
     });
