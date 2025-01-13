@@ -40,7 +40,7 @@ describe('TestContract tests:', async function () {
         solanaKeyPair = solanaWeb3.Keypair.fromSecretKey(solanaPrivateKey);
         console.log(solanaKeyPair, 'solanaKeyPair')
 
-        neonProxyState = await neonEVM.getProxyState(`https://devnet.neonevm.org`);
+        neonProxyState = await neonEVM.getProxyState(process.env.EVM_SOL_NODE);
         console.log(neonProxyState, 'neonProxyState')
         neonProxyRpcApi = neonProxyState.proxyApi;
         console.log(neonProxyRpcApi, 'neonProxyRpcApi')
@@ -62,10 +62,9 @@ describe('TestContract tests:', async function () {
     describe('Tests:', function() {
         it('Test SVM signing', async function () {
             const callData =  ethers.keccak256(Buffer.from('increaseNum()')).substring(0,10)
-            console.log(callData, 'callData');
 
             // let nonce = Number(await neonProxyRpcApi.getTransactionCount(solanaUser.neonWallet));
-            const eth_getTransactionCountRequest = await fetch(neonProxyRpcApi.rpcUrl+ '/SOL', {
+            const eth_getTransactionCountRequest = await fetch(neonProxyRpcApi.rpcUrl, {
                 method: 'POST',
                 body: JSON.stringify({"method":"eth_getTransactionCount","params":[solanaUser.neonWallet, "latest"],"id":1,"jsonrpc":"2.0"}),
                 headers: { 'Content-Type': 'application/json' }
@@ -76,33 +75,26 @@ describe('TestContract tests:', async function () {
             let maxFeePerGas = 10000000000
             const multipleTransactions = new neonEVM.MultipleTransactions(nonce, maxFeePerGas);
 
-            multipleTransactions.addTransaction(new neonEVM.ScheduledTransaction({
-                index: 0,
-                nonce: ethers.toBeHex(parseInt(nonce, 16)),
-                payer: solanaUser.neonWallet,
-                sender: '0x',
-                value: 0,
-                target: TestContract.target,
-                callData: callData,
-                maxFeePerGas: maxFeePerGas,
-                gasLimit: 1000000,
-                chainId: chainId
-            }), neonEVM.NO_CHILD_INDEX, 0); // 1, 0);
-/*
-            multipleTransactions.addTransaction(new neonEVM.ScheduledTransaction({
-                index: 1,
-                nonce: ethers.toBeHex(parseInt(nonce, 16)),
-                payer: solanaUser.neonWallet,
-                sender: '0x',
-                value: 0,
-                target: TestContract.target,
-                callData: callData,
-                maxFeePerGas: maxFeePerGas,
-                gasLimit: 1000000,
-                chainId: chainId
-            }), neonEVM.NO_CHILD_INDEX, 1);
-*/
-            console.log(multipleTransactions, 'multipleTransactions')
+            let scheduledTransactions = [];
+            for (let i = 0; i < 4; i++) {
+                scheduledTransactions.push(new neonEVM.ScheduledTransaction({
+                    index: i,
+                    nonce: ethers.toBeHex(parseInt(nonce, 16)),
+                    payer: solanaUser.neonWallet,
+                    sender: '0x',
+                    value: 0,
+                    target: TestContract.target,
+                    callData: callData,
+                    maxFeePerGas: maxFeePerGas,
+                    gasLimit: 1000000,
+                    chainId: solanaUser.chainId
+                }))
+            }
+
+            multipleTransactions.addTransaction(scheduledTransactions[0], 3, 0);
+            multipleTransactions.addTransaction(scheduledTransactions[1], 3, 0);
+            multipleTransactions.addTransaction(scheduledTransactions[2], 3, 0);
+            multipleTransactions.addTransaction(scheduledTransactions[3], neonEVM.NO_CHILD_INDEX, 3);
 
             // We create a transaction for Solana, including all the previously defined data.
             const solanaTransaction = await neonEVM.createScheduledNeonEvmMultipleTransaction({
@@ -114,11 +106,9 @@ describe('TestContract tests:', async function () {
                 neonWalletNonce: nonce,
                 neonTransaction: multipleTransactions.data,
             });
-            console.log(solanaTransaction, 'solanaTransaction')
 
             // It is necessary to ensure that the balance account is initialized on Solana before the Scheduled
             // transaction is executed. If it is not, an instruction to create the balance account must be added.
-            console.log(solanaUser.balanceAddress, 'balanceAccount')
             const balanceAccount = await solanaConnection.getAccountInfo(solanaUser.balanceAddress)
             if (balanceAccount === null) {
                 solanaTransaction.instructions.unshift(neonEVM.createBalanceAccountInstruction(
@@ -137,13 +127,46 @@ describe('TestContract tests:', async function () {
                 false,
                 { skipPreflight: false }
             );
+            await asyncTimeout(30000)
 
-            const eth_getPendingTransactionsRequest = await fetch(neonProxyRpcApi.rpcUrl+ '/SOL', {
+            let neon_sendRawScheduledTransactionRequest = await fetch(neonProxyRpcApi.rpcUrl, {
+                method: 'POST',
+                body: JSON.stringify({"method":"neon_sendRawScheduledTransaction","params":[`0x${scheduledTransactions[0].serialize()}`],"id":1,"jsonrpc":"2.0"}),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            let sendRawScheduledTransactionResult = (await neon_sendRawScheduledTransactionRequest.json())// .result;
+            console.log(sendRawScheduledTransactionResult, 'sendRawScheduledTransactionResult 0');
+
+            neon_sendRawScheduledTransactionRequest = await fetch(neonProxyRpcApi.rpcUrl, {
+                method: 'POST',
+                body: JSON.stringify({"method":"neon_sendRawScheduledTransaction","params":[`0x${scheduledTransactions[1].serialize()}`],"id":1,"jsonrpc":"2.0"}),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            sendRawScheduledTransactionResult = (await neon_sendRawScheduledTransactionRequest.json())// .result;
+            console.log(sendRawScheduledTransactionResult, 'sendRawScheduledTransactionResult 1');
+
+            neon_sendRawScheduledTransactionRequest = await fetch(neonProxyRpcApi.rpcUrl, {
+                method: 'POST',
+                body: JSON.stringify({"method":"neon_sendRawScheduledTransaction","params":[`0x${scheduledTransactions[2].serialize()}`],"id":1,"jsonrpc":"2.0"}),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            sendRawScheduledTransactionResult = (await neon_sendRawScheduledTransactionRequest.json())// .result;
+            console.log(sendRawScheduledTransactionResult, 'sendRawScheduledTransactionResult 2');
+
+            neon_sendRawScheduledTransactionRequest = await fetch(neonProxyRpcApi.rpcUrl, {
+                method: 'POST',
+                body: JSON.stringify({"method":"neon_sendRawScheduledTransaction","params":[`0x${scheduledTransactions[3].serialize()}`],"id":1,"jsonrpc":"2.0"}),
+                headers: { 'Content-Type': 'application/json' }
+            });
+            sendRawScheduledTransactionResult = (await neon_sendRawScheduledTransactionRequest.json())// .result;
+            console.log(sendRawScheduledTransactionResult, 'sendRawScheduledTransactionResult 3');
+
+            const neon_getPendingTransactionsRequest = await fetch(neonProxyRpcApi.rpcUrl, {
                 method: 'POST',
                 body: JSON.stringify({"method":"neon_getPendingTransactions","params":[solanaUser.publicKey.toBase58()],"id":1,"jsonrpc":"2.0"}),
                 headers: { 'Content-Type': 'application/json' }
             });
-            let pendingTransactions =(await eth_getPendingTransactionsRequest.json()).result;
+            let pendingTransactions =(await neon_getPendingTransactionsRequest.json()).result;
             console.log(pendingTransactions, 'pendingTransactions');
 /*
             const transactionStatus = await neonClientApi.waitTransactionTreeExecution({
@@ -157,7 +180,6 @@ describe('TestContract tests:', async function () {
                 console.log(receipt, 'receipt');
             }
 */
-            console.log(await TestContract.num(), 'TestContract counter');
         });
     });
 });
@@ -174,8 +196,6 @@ async function sendSolanaTransaction(
     transaction.sign(...signers);
 
     const signature = await connection.sendRawTransaction(transaction.serialize(), options);
-    console.log(signature, 'signature');
-
     if (confirm) {
         const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
         await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature });
@@ -183,4 +203,12 @@ async function sendSolanaTransaction(
 
     console.log(`\nTransaction${name ? ` ${name}` : ''} signature: ${signature}`);
     console.log(`\nhttps://explorer.solana.com/tx/${signature}?cluster=custom&customUrl=${process.env.SVM_NODE}`);
+}
+
+async function asyncTimeout(timeout) {
+    return new Promise((resolve)=> {
+        setTimeout(() => {
+            resolve()
+        }, timeout)
+    })
 }
